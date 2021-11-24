@@ -1,9 +1,13 @@
+const chalk = require('chalk')
 const {createConnection, getConnection, Connection} = require('typeorm')
 const debug = require('debug')('select:db')
 
 module.exports.init = async () => {
   const select_config = global.config.get('select-configuration')
-  if (!select_config.resources) throw new Error('server error: no resources configured.')
+  if (!select_config.resources || select_config.resources.length == 0) {
+    // throw new Error('server error: no resources configured.')
+    return console.log(chalk.cyan(`  select:admin `), chalk.red.bold('server warning: no resources configured.'))
+  }
 
   for (const r of select_config.resources) {
     if (r.type == 'mysql') {
