@@ -42,9 +42,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cors())
 app.use('/', routes);
-app.use(serveStatic(path.join(__dirname, 'ui', 'dist')))
+app.use(serveStatic(path.join(__dirname, 'dist')))
 app.get('/:path(*)', (req, res) => {
-  res.status(200).sendFile(path.join(__dirname, 'ui', 'dist', 'index.html'))
+  res.status(200).sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
 
 app.use(function(req, res, next) {

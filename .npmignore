@@ -13,5 +13,4 @@ npm-debug.log
 
 temp
 .debugs
-!ui/dist
 ui

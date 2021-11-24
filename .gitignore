@@ -1,5 +1,6 @@
 node_modules
 temp
+dist
 .vscode
 config/local.yml
 .debugs
