@@ -44,7 +44,7 @@
   "bugs": {
     "url": "https://github.com/eces/select/issues"
   },
-  "homepage": "https://github.com/eces/select#readme",
+  "homepage": "https://docs.selectfromuser.com",
   "debugs": [
     "select:*"
   ]
