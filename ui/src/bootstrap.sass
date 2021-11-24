@@ -1,0 +1,30 @@
+$font-size-base: 0.9rem
+$primary: #0D6EFD
+
+@import 'bootstrap/scss/bootstrap.scss'
+
+.btn 
+  font-size: 13px
+  font-weight: bold 
+  color: #555
+  transition: none !important
+  &:active, &:focus
+    box-shadow: 0px 0px 0px 1px rgba(#273c75, .3) !important
+    border-color: rgba(#273c75, .5) !important
+.btn-light:hover
+  background-color: #f0f0f0
+  border-color: #999 !important
+
+.btn-light.text-success
+  background-color: mix(#198754, #fff, 15%) !important
+  border-color: mix(#198754, #fff, 20%) !important
+  &:hover
+    background-color: mix(#198754, #fff, 25%) !important
+    border-color: #999 !important
+
+.btn-light.text-primary
+  background-color: mix(#0D6EFD, #fff, 10%) !important
+  border-color: mix(#0D6EFD, #fff, 20%) !important
+  &:hover
+    background-color: mix(#0D6EFD, #fff, 15%) !important
+    border-color: #999 !important

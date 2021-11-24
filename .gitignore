@@ -1,0 +1,6 @@
+node_modules
+temp
+.vscode
+config/local.yml
+.debugs
+.DS_Store

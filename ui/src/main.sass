@@ -1,0 +1,41 @@
+@import '../node_modules/gfm.css/source/gfm.scss'
+
+html, body
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+
+.async
+  transition: opacity ease-in-out 300ms
+  opacity: 0
+  &.done
+    transition: opacity ease-in-out 300ms
+    opacity: 1 !important
+  &.hide
+    display: none
+.async-hidden
+  transition: opacity ease-in-out 300ms
+  opacity: 0
+  display: none
+  &.done
+    display: inherit
+    transition: opacity ease-in-out 300ms
+    opacity: 1 !important
+
+#app
+  -webkit-font-smoothing: antialiased
+  -moz-osx-font-smoothing: grayscale
+  height: 100vh
+  overflow: hidden
+
+body
+  background-color: #f0f0f0
+
+.memo-html
+  p
+    margin-bottom: 0.25rem !important
+
+table.vgt-table
+  font-size: 13px !important
+
+.vm--modal
+  min-height: 90vh
