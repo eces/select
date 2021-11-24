@@ -3,6 +3,8 @@
 Easy build for admin/backoffice on YAML based declarative way.
 </div>
 
+<a href="https://www.npmjs.com/package/selectfromuser" target="_blank"><img src="https://img.shields.io/github/package-json/v/eces/select"></img></a>
+
 ## Features
 
 - [x] [mysql](#) backend support.
