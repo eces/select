@@ -38,6 +38,76 @@ Install package from `npm install -g selectfromuser` or `yarn global add selectf
 
 - [KR 가이드 설명서](https://docs.selectfromuser.com/guide/)
 
+### Sample Recipe
+
+`default.yml`
+
+```yml
+select-configuration:
+  title: Welcome to Select
+  menus:
+    - group: 회원
+      name: 고객 목록
+      path: users/list
+    - group: 회원
+      name: 휴면회원 목록
+      path: users/dormant
+      placement: tab-only
+    - group: 회원
+      name: 마케팅 수신동의
+      path: users/promotion
+      placement: tab-only
+    
+    - group: 기타메뉴
+      name: 공식 문서 
+      path: https://docs.selectfromuser.com
+      target: _blank
+    - group: 기타메뉴
+      name: 클라우드 이용
+      path: https://selectfromuser.com
+      target: _blank
+
+  access-control:
+    
+  users:
+    - id: admin
+      pw: YWRtaW4=
+      roles:
+        - admin
+  
+  pages:
+    - path: users/list
+      blocks:
+        - type: markdown
+          content: >
+            # 셀렉트에 오신것을 환영합니다.
+        
+    - path: users/dormant
+      blocks:
+        - type: markdown
+          content: >
+            # 셀렉트에 오신것을 환영합니다.
+        
+    - path: users/promotion
+      blocks:
+        - type: markdown
+          content: >
+            # 셀렉트에 오신것을 환영합니다.
+        
+  resources:
+    # - key: mysql.dev
+    #   type: mysql
+    #   host: YOUR_HOST.rds.amazonaws.com
+    #   port: 3306
+    #   username: (DB account name)
+    #   password: (base64 encoded DB password. Encoding with click, please see this: https://docs.selectfromuser.com/guide/connection.html)
+    #   database: (DB collection name)
+    #   requestTimeout: 3000
+    #   timezone: '+00:00'
+    #   charset: "utf8mb4_general_ci"
+```
+
+
 ## Tests
 
 ##### `npm test -- --grep="auth"`
