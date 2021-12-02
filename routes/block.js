@@ -38,27 +38,24 @@ router.post('/query', [only.id()], async (req, res, next) => {
     try {
       if (fields && fields.length) {
         let bind_sql = block.sql
-        const bind_params = []
-        for (const f of fields) {
-          if (f.raw === true) {
-            bind_sql = bind_sql.replace(':'+f.key, f.value)
-          } else if (f.column === true) {
-            bind_sql = bind_sql.replace(':'+f.key, '??')
-          } else {
-            bind_sql = bind_sql.replace(':'+f.key, '?')
+        const bind_params = {}
+        for (const param of fields) {
+          bind_params[param.key] = param.value
+          if (param.raw === true) {
+            bind_sql = bind_sql.replace(new RegExp(`\:${param.key}`, 'g'), param.value)
           }
-          bind_params.push(f.value)
-          // 순서 고려해서 넣어야함 $0 $1 @0 @1
         }
-        rows = await master.query(bind_sql, bind_params)
+        const [ escaped_bind_sql, escaped_bind_params ] = master.driver
+          .escapeQueryWithParameters(bind_sql, bind_params, {})
+        rows = await master.query(escaped_bind_sql, escaped_bind_params)
       } else {
         rows = await master.query(block.sql)
       }
     } catch (error) {
-      res.status(200).json({
+      return res.status(200).json({
         message: 'query failed',
         rows,
-        error: Object.assign(error, {
+        error: Object.assign({ code: '500', sqlMessage: `Server Error: ${error.message}` }, error, {
           driverError: undefined
         }),
       })  

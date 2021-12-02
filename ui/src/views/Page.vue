@@ -478,6 +478,12 @@ export default {
         // console.log(r.data)
         if (r.data?.message != 'ok') {
           this.error = r.data.error
+          this.results[i] = {
+            name: block.name,
+            cols: [],
+            rows: [],
+            error: r.data.error,
+          }
           return
         } else {
           this.error = {}
