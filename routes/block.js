@@ -90,23 +90,48 @@ router.post('/http', [only.id()], async (req, res, next) => {
     
     if (block.type != 'http') throw StatusError(400, 'block type is not http')
     let rows;
-    
-    const config = _.cloneDeep(block.axios)
-    for (const root in config) {
-      if (!['data', 'url'].includes(root) || !config[root]) continue
 
-      if (_.isObject(config[root])) {
-        for (const key in config[root]) {
-          for (const param of fields) {
-            config[root][key] = config[root][key].replace(new RegExp(`\{\{${param.key}\}\}`, 'g'), param.value)
-          }
-        } 
-      } 
-      else if (_.isString(config[root])) {
-        for (const param of fields) {
-          config[root] = String(config[root]).replace(new RegExp(`\{\{${param.key}\}\}`, 'g'), param.value)
+    let config
+    if (_.isObject(block.axios)) {
+      config = _.cloneDeep(block.axios)
+      if (_.isString(config.data)) {
+        try {
+          config.data = JSON.parse(config.data)
+        } catch (error) {
+          throw StatusError(400, 'axios.data JSON invalid: ' + error.message)
         }
       }
+      if (_.isString(config.headers)) {
+        try {
+          config.headers = JSON.parse(config.headers)
+        } catch (error) {
+          throw StatusError(400, 'axios.headers JSON invalid: ' + error.message)
+        }
+      }
+      if (_.isString(config.params)) {
+        try {
+          config.params = JSON.parse(config.params)
+        } catch (error) {
+          throw StatusError(400, 'axios.params JSON invalid: ' + error.message)
+        }
+      }
+      let json = JSON.stringify(config)
+      for (const param of fields) {
+        let v;
+        if (param.format == 'number') {
+          if (!isFinite(+param.value)) throw StatusError(`param[${param.key}] invalid number`)
+          v = JSON.stringify(+param.value)
+        } else {
+          v = JSON.stringify(param.value).slice(1, -1)
+        }
+        json = String(json).replace(new RegExp(`\{\{${param.key}\}\}`, 'g'), v)
+        config = JSON.parse(json)
+      }
+    } else if (_.isString(block.axios)) {
+      // TODO: support full json request
+      throw StatusError(400, 'block.axios format invalid: Object')
+    } else {
+      throw StatusError(400, 'block.axios format invalid: Object')
     }
     
     try {
