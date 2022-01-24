@@ -1,4 +1,4 @@
-@import '../node_modules/gfm.css/source/gfm.scss'
+// @import '../node_modules/gfm.css/source/gfm.scss'
 
 html, body
   -webkit-font-smoothing: antialiased
@@ -27,8 +27,16 @@ html, body
   height: 100vh
   overflow: hidden
 
+.scroll
+  height: 100vh
+  overflow: hidden
+
 body
   background-color: #f0f0f0
+
+// .ProseMirror
+//   p.is-editor-empty:first-child::before
+//     color: rgba(0,0,0,0.3) !important
 
 .memo-html
   p
@@ -36,6 +44,15 @@ body
 
 table.vgt-table
   font-size: 13px !important
+  
+table.vgt-responsive
+  width: max-content !important
+  max-width: initial !important
+  min-width: 100%
+  margin-bottom: 0px
+
+  &.table > :not(:first-child)
+    border: 0 !important
 
 .vm--modal
   min-height: 90vh

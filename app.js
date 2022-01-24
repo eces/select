@@ -8,7 +8,7 @@ const cors = require('cors')
 const morgan = require('morgan')
 const serveStatic = require('serve-static')
 const serveFavicon = require('serve-favicon')
-const debug = require('debug')('select:app')
+const {debug, info, error} = require('./log')('select:app')
 
 const routes = require('./routes')
 
@@ -94,7 +94,7 @@ module.exports.prehook = async (next) => {
   const c = global.config.get('select-configuration')
   console.log(chalk.cyan(`  select:admin `), chalk.bold('start'))
   console.log(`NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
-  console.log(`DEBUG = ${chalk.bold( process.env.DEBUG )}`)
+  console.log(`DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
   console.log(`PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
   console.log(`config[title] = ${chalk.bold(c.title)}`)
   console.log(`config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
@@ -102,7 +102,12 @@ module.exports.prehook = async (next) => {
   console.log(`config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
 
   try {
-    debug('config[resources] connecting')
+    debug('config[redis] connecting...')
+    const redis = require(__absolute + '/models/redis')
+    await redis.init()
+    debug('config[redis] connected')
+
+    debug('config[resources] connecting...')
     const db = require(__absolute + '/models/db')
     await db.init()
     debug('config[resources] connected')
