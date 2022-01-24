@@ -7,6 +7,7 @@
     "prepublishOnly": "cd ui; npm run build;",
     "test": "ava tests/*.js",
     "start": "npm run api",
+    "dev": "NODE_CONFIG_DIR=./config npm run api",
     "api": "PORT=8000 NODE_ENV=development nodemon ./bin/select --ignore ./tests --ignore ./ui --watch ./config/local.yml --watch ."
   },
   "bin": {

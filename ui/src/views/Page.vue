@@ -87,7 +87,7 @@ div
                 label.d-block.pb-1: strong.text-muted: small {{param.label || param.key}}
                 input.form-control(:type='param.format' v-model='param.value')
               .mt-2
-              button.btn.btn-light.text-primary.border(type='submit' v-show='!block.autoload && block.params') 실행
+              button.btn.btn-light.text-primary.border(type='submit' v-show='(block.params && block.params.length) || !block.autoload ') 실행
               div.alert.alert-light.mt-1(v-if='block.update_result') 
                 pre {{block.update_result}}
                 small.text-muted  ({{block.delay/1000}}초 소요)
@@ -260,6 +260,8 @@ export default {
         const time_e = Date.now()
         if (r.data?.message != 'ok') {
           this.error = r.data.error
+          this.$set(block, 'update_result', r.data.message)  
+          this.$set(block, 'delay', time_e - time_s)
           return
         } else {
           this.error = {}
@@ -476,6 +478,12 @@ export default {
         // console.log(r.data)
         if (r.data?.message != 'ok') {
           this.error = r.data.error
+          this.results[i] = {
+            name: block.name,
+            cols: [],
+            rows: [],
+            error: r.data.error,
+          }
           return
         } else {
           this.error = {}
