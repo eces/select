@@ -80,6 +80,11 @@ router.get('/google/callback', async (req, res, next) => {
     if (!p.id) throw new Error('로그인실패: 구글 ID가 없습니다.')
     if (!p.verified_email) throw new Error('로그인실패: 메일인증 미완료 계정입니다.')
 
+    if (global.config.has('select-configuration.integrations.google-sso.restrict-domain')) {
+      const hd = global.config.get('select-configuration.integrations.google-sso.restrict-domain')
+      if (hd != p.hd) throw new Error('도메인 제한을 확인해주세요. select-configuration.integrations.google-sso.restrict-domain')
+    }
+
     const users = global.config.get('select-configuration.users')
 
     const user = users.filter(e => {
