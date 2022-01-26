@@ -1,3 +1,4 @@
+const logger = require(__absolute + '/models/logger')
 const debug = require('debug')('select:api')
 const only = require(__absolute + '/models/only')
 const crypto = require('crypto')
@@ -60,6 +61,11 @@ router.post('/authorize', async (req, res, next) => {
       expiresIn: global.config.has('policy.session_expire') ? global.config.get('policy.session_expire') : global.DEFAULT_POLICY_SESSION_EXPIRE
     })
 
+    logger.emit('session activity', {
+      email: u.id,
+      response_type: 'session:id start',
+    })
+
     res.status(200).json({
       message: 'ok',
       token,
@@ -97,6 +103,12 @@ router.get('/me', [only.id()], async (req, res, next) => {
     const token = jwt.sign(session, global.config.has('secret.access_token') ? global.config.get('secret.access_token') : global.DEFAULT_SECRET_ACCESS_TOKEN, {
       expiresIn: global.config.has('policy.session_expire') ? global.config.get('policy.session_expire') : global.DEFAULT_POLICY_SESSION_EXPIRE
     })
+
+    logger.emit('session activity', {
+      email: user.id,
+      response_type: 'session refresh',
+    })
+
     res.status(200).json({
       message: 'ok',
       token,
@@ -104,6 +116,8 @@ router.get('/me', [only.id()], async (req, res, next) => {
         email: user.id,
         roles: user.roles
       }, userdata || {}),
+      env: process.env.NODE_ENV,
+      hostname: global.__hostname,
     })
   } catch (error) {
     next(error)

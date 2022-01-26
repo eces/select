@@ -1,3 +1,4 @@
+const logger = require(__absolute + '/models/logger')
 const debug = require('debug')('select:api')
 const only = require(__absolute + '/models/only')
 const { getRedisConnection } = require(__absolute + '/models/redis')
@@ -114,6 +115,11 @@ router.get('/google/callback', async (req, res, next) => {
     }
     const token = jwt.sign(session, global.config.get('secret.access_token'), {
       expiresIn: global.config.get('policy.session_expire')
+    })
+
+    logger.emit('session activity', {
+      email: user.id,
+      response_type: 'session:google start',
     })
 
     res.redirect(`${global.config.get('web.base_url')}/login/process#token=${token}`)

@@ -214,6 +214,13 @@ router.post('/query', [only.id()], async (req, res, next) => {
       const {data, statusText} = r
       spreadsheetUrl = data.spreadsheetUrl
     }
+
+    logger.emit('session activity', {
+      email: req.session.id,
+      sql_type: block.sqlType,
+      block_name: block.name,
+      response_type,
+    })
   
     res.status(200).json({
       message: 'ok',
@@ -419,6 +426,14 @@ router.post('/http', [only.id()], async (req, res, next) => {
       const {data, statusText} = r
       spreadsheetUrl = data.spreadsheetUrl
     }
+
+    logger.emit('session activity', {
+      email: req.session.id,
+      sql_type: block.sqlType,
+      http_method: (block.axios && block.axios.method),
+      block_name: block.name,
+      response_type,
+    })
   
     res.status(200).json({
       message: 'ok',

@@ -92,6 +92,7 @@ module.exports.prehook = async (next) => {
   console.log(chalk.green(`✓`), `NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
   console.log(chalk.green(`✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
   console.log(chalk.green(`✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
+  console.log(chalk.green(`✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : 'N/A' )}`)
   console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
   console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
   console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
@@ -135,4 +136,38 @@ module.exports.posthook = async () => {
     chalk.cyan(`  select:admin `), 
     chalk.bold(`ready on http://localhost:${ (process.env.PORT || 9400) }`),
   )
+
+  try {
+    const axios = require('axios')
+    const os = require('os')
+    hostname = os.hostname()
+
+    const c = global.config.get('select-configuration')
+    const count_menu = (c.menus && c.menus.length) || 0
+    const count_user = (c.users && c.users.length) || 0
+    const count_page = (c.pages && c.pages.length) || 0
+    const count_resource = (c.resources && c.resources.length) || 0
+    let count_block = 0
+    if (count_page) {
+      for (const page of c.pages) {
+        count_block += (page.blocks && page.blocks.length) || 0
+      }
+    }
+
+    await axios.post('https://api.selectfromuser.com/api/license/2022-01-26', {
+      key: global.config['license-key'] || '',
+      json: {
+        env: process.env.NODE_ENV,
+        hostname,
+        count_menu,
+        count_user,
+        count_page,
+        count_resource,
+        count_block,
+      }
+    })
+  } catch (error) {
+    console.log(error.message)
+  }
+
 }

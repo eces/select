@@ -1,5 +1,8 @@
 const {debug, info, error} = require(__absolute + '/log')('select:app')
 const { getConnection } = require('typeorm')
+const axios = require('axios').create({
+  timeout: 5000,
+})
 
 const EventEmitter = require('events')
 
@@ -52,6 +55,24 @@ ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
   ee.on(name, async (opt) => {
     const {team_id, user_id, json} = opt
     error(name, team_id, teamrow_id, json)
+  })
+}
+
+{
+  const name = 'session activity'
+  ee.on(name, async (opt) => {
+    try {
+      await axios.post('https://api.selectfromuser.com/api/license/2022-01-26/session-activity', {
+        key: global.config['license-key'] || '',
+        email: opt.email,
+        sql_type: opt.sql_type,
+        http_method: opt.http_method,
+        block_name: opt.block_name,
+        response_type: opt.response_type,
+      })
+    } catch (e) {
+      error(e)
+    }
   })
 }
 

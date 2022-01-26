@@ -19,6 +19,7 @@ global.DEFAULT_SECRET_ACCESS_TOKEN = 'h{.V(eWpSbpU35J4'
 global.DEFAULT_POLICY_SESSION_EXPIRE = 43200
 
 const os = require('os');
+global.__hostname = os.hostname()
 const winston = require('winston');
 // require('winston-syslog');
 
