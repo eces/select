@@ -6,6 +6,11 @@ if(fs.existsSync(__package)){
   require('debugs/init')
 }
 
+const { program } = require('commander');
+const ___package = require('./package.json')
+program.version(___package.version, '-v, --version, -version, -V')
+program.parse()
+
 global.__absolute = __dirname
 process.env.NODE_CONFIG_DIR = process.env.NODE_CONFIG_DIR || '.'
 global.config = require('config')
