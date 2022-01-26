@@ -119,9 +119,9 @@ export default {
           if (this.$store.state.session?.id) {
             await this.$store.dispatch('config')
 
-            this.$router.push({
-              path: '/teams',
-            })
+            // this.$router.push({
+            //   path: '/teams',
+            // })
           } else {
             this.$router.push({
               path: '/login',
