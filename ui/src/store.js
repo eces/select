@@ -4,6 +4,18 @@ import uniq from 'lodash/uniq'
 import compact from 'lodash/compact'
 import flatten from 'lodash/flatten'
 import {sortBy, keyBy} from 'lodash'
+import * as Sentry from "@sentry/browser";
+import { Integrations } from "@sentry/tracing";
+
+Sentry.init({
+  dsn: "https://2e24eeaf0dde4e699b0ebf4016a75a33@o1100664.ingest.sentry.io/6168586",
+  integrations: [new Integrations.BrowserTracing()],
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
 
 const delay = ms => new Promise(_ => setTimeout(_, ms))
 
@@ -157,7 +169,7 @@ const store = {
               throw new Error('retry')
             }
 
-            const {token, session} = r.data
+            const {token, session, env, hostname} = r.data
 
             // refreshed token
             window.localStorage.SELECT2_TOKEN = token
@@ -166,6 +178,13 @@ const store = {
             session.loaded = true
             session.roles_by_team_id = keyBy(session.roles, 'team_id')
             context.commit('session', session)
+            
+            Sentry.setUser({
+              email: session.email,
+              env,
+              hostname,
+            })
+
             return true
           } catch (error) {
             if (i >= 2) {
