@@ -48,10 +48,11 @@ router.post('/authorize', async (req, res, next) => {
     }
 
     const u = matched_users[0]
+    const u_pw_string = String(u.pw || '').trim()
     const u_pw_hash = crypto.createHmac('sha256', global.config.has('secret.hash') ? global.config.get('secret.hash') : global.DEFAULT_SECRET_HASH)
-      .update(Buffer.from(u.pw, 'base64').toString('utf8'))
+      .update(Buffer.from(u_pw_string, 'base64').toString('utf8'))
       .digest('hex')
-    if (u_pw_hash != pw_hash) throw StatusError(400, `비밀번호가 틀립니다. (${reattempt_count}/5)`)
+    if (u_pw_string.length === 0 || u_pw_hash != pw_hash) throw StatusError(400, `비밀번호가 틀립니다. (${reattempt_count}/5)`)
 
     const session = {
       id: u.id,
