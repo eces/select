@@ -7,7 +7,10 @@ const jwt = require('jsonwebtoken')
 const { getConnection, TableExclusion } = require('typeorm')
 const uuidv4 = require('uuid').v4
 const qs = require('querystring')
-const rp = require('request-promise')
+const axios = require('axios').create({
+  withCredentials: false,
+  timeout: 5000,
+})
 
 const router = require('express').Router()
 
@@ -56,27 +59,25 @@ router.get('/google/callback', async (req, res, next) => {
     const value = await redis.get(state)
     if (value === null) throw new Error('로그인실패: 유효기간(5분)만료. 다시시도해주세요.')
 
-    const r = await rp.post({
-      url: 'https://oauth2.googleapis.com/token',
-      qs: {
+    const r = await axios.post('https://oauth2.googleapis.com/token', {}, {
+      params: {
         client_id: global.config.get('google.client_id'),
         client_secret: global.config.get('google.client_secret'),
         redirect_uri: global.config.get('google.redirect_uri'),
         grant_type: 'authorization_code',
         code,
-      },
-      json: true,
+      }
     })
-    const {access_token} = r
+    const {access_token} = r.data
     if (!access_token) throw new Error('access_token error')
 
-    const p = await rp.get({
-      url: 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json',
+    const _p = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
       headers: {
         'Authorization': 'Bearer ' + access_token,
       },
-      json: true,
     })
+    const p = _p.data
+
     if (!p.id) throw new Error('로그인실패: 구글 ID가 없습니다.')
     if (!p.verified_email) throw new Error('로그인실패: 메일인증 미완료 계정입니다.')
 
@@ -168,36 +169,32 @@ router.get('/google/spreadsheet/callback', [], async (req, res, next) => {
     if (value === null) throw new Error('로그인실패: 유효기간(5분)만료. 다시시도해주세요.')
     const session = JSON.parse(value)
 
-    const r = await rp.post({
-      url: 'https://oauth2.googleapis.com/token',
-      qs: {
+    const _r = await axios.post('https://oauth2.googleapis.com/token', {}, {
+      params: {
         client_id: global.config.get('google_sheet.client_id'),
         client_secret: global.config.get('google_sheet.client_secret'),
         redirect_uri: global.config.get('google_sheet.redirect_uri'),
         grant_type: 'authorization_code',
         code,
         // access_type: 'offline',
-      },
-      json: true,
+      }
     })
+    const r = _r.data
     const {access_token} = r
-    debug(r)
     if (!access_token) throw new Error('access_token error')
 
-    const p = await rp.get({
-      url: 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json',
+    const _p = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
       headers: {
         'Authorization': 'Bearer ' + access_token,
       },
-      json: true,
     })
+    const p = _p.data
     if (!p.id) throw new Error('로그인실패: 구글 ID가 없습니다.')
     if (!p.verified_email) throw new Error('로그인실패: 메일인증 미완료 계정입니다.')
     if (global.config.has('select-configuration.integrations.google-spreadsheets.restrict-domain')) {
       const hd = global.config.get('select-configuration.integrations.google-spreadsheets.restrict-domain')
       if (hd != p.hd) throw new Error('도메인 제한을 확인해주세요. select-configuration.integrations.google-spreadsheets.restrict-domain')
     }
-    debug(p)
     // update current session
 
     const id = session.uuid
@@ -210,6 +207,7 @@ router.get('/google/spreadsheet/callback', [], async (req, res, next) => {
       google_sheet_config: JSON.stringify(Object.assign({}, r, p)),
       google_sheet_updated_at: moment().format(),
     })
+    debug({user_next})
     await redis.set(key, JSON.stringify(user_next))
 
     res.redirect(`${global.config.get('web.base_url')}/connect/process#ok`)
@@ -231,23 +229,25 @@ router.get('/google/spreadsheet/refresh', [only.id()], async (req, res, next) =>
     if (!user || !user.google_sheet_access_token) throw StatusError(400, 'not connected')
     const has_expired = moment(user.google_sheet_updated_at).isBefore(moment().add(-59, 'minute'), 'minute')
     if (!user.google_sheet_updated_at || has_expired) {
-      const r = await rp.post({
-        url: 'https://oauth2.googleapis.com/token',
-        qs: {
-          client_id: global.config.get('google_sheet.client_id'),
-          client_secret: global.config.get('google_sheet.client_secret'),
-          grant_type: 'refresh_token',
-          refresh_token: user.google_sheet_config.refresh_token,
-        },
-        json: true,
-      })
-      
-      const user_next = Object.assign(user, {
-        google_sheet_access_token: access_token,
-        google_sheet_config: JSON.stringify(Object.assign(user.google_sheet_config, r)),
-        google_sheet_updated_at: moment().format(),
-      })
-      await redis.set(key, JSON.stringify(user_next))
+      try {
+        const r = await axios.post('https://oauth2.googleapis.com/token', {}, {
+          params: {
+            client_id: global.config.get('google_sheet.client_id'),
+            client_secret: global.config.get('google_sheet.client_secret'),
+            grant_type: 'refresh_token',
+            refresh_token: user.google_sheet_config.refresh_token,
+          }
+        })
+        
+        const user_next = Object.assign(user, {
+          google_sheet_access_token: access_token,
+          google_sheet_config: JSON.stringify(Object.assign(user.google_sheet_config, r.data)),
+          google_sheet_updated_at: moment().format(),
+        })
+        await redis.set(key, JSON.stringify(user_next))
+      } catch (error) {
+        throw StatusError(400, 'not connected')
+      }
     }
 
     res.status(200).json({
