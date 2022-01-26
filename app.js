@@ -8,7 +8,7 @@ const cors = require('cors')
 const morgan = require('morgan')
 const serveStatic = require('serve-static')
 const serveFavicon = require('serve-favicon')
-const {debug, info, error} = require('./log')('select:app')
+const {debug, info, error} = require(__absolute + '/log')('select:app')
 
 const routes = require('./routes')
 
@@ -26,7 +26,7 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
   morgan.token('uid', (req) => {
     return req.session && req.session.id || 0
   })
-  app.use(morgan(':method :status - :response-time ms [u:uid]', {
+  app.use(morgan(':method :status - :response-time ms [u::uid]', {
     skip: (req, res) => {
       url = req.originalUrl || req.url
       if (url.startsWith('/healthcheck')) {
@@ -51,10 +51,6 @@ app.use(function(req, res, next) {
   req._json = true
   next(StatusError(404));
 });
-
-if (process.env.NODE_ENV == 'production') {
-  app.use(Sentry.Handlers.errorHandler());
-}
 
 app.use(function(err, req, res, next) {
   res.locals.message = err.message;
@@ -93,31 +89,44 @@ module.exports = app;
 module.exports.prehook = async (next) => {
   const c = global.config.get('select-configuration')
   console.log(chalk.cyan(`  select:admin `), chalk.bold('start'))
-  console.log(`NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
-  console.log(`DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
-  console.log(`PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
-  console.log(`config[title] = ${chalk.bold(c.title)}`)
-  console.log(`config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
-  console.log(`config[users] = ${chalk.bold(c.users.length)} item(s)`)
-  console.log(`config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
+  console.log(chalk.green(`✓`), `NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
+  console.log(chalk.green(`✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
+  console.log(chalk.green(`✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
+  console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
+  console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
+  console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
+  console.log(chalk.green(`✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
 
   try {
-    debug('config[redis] connecting...')
+    global.config.get('redis.master.host')
+    global.config.get('redis.master.port')
+    global.config.get('redis.master.db')
+    global.config.get('web.base_url')
+    global.config.get('secret.access_token')
+    global.config.get('policy.session_expire')
+    // global.config.get('google.client_id')
+    // global.config.get('google.redirect_uri')
+    // global.config.get('google.client_secret')
+    // global.config.get('google_sheet.client_id')
+    // global.config.get('google_sheet.redirect_uri')
+    // global.config.get('google_sheet.client_secret')
+
+    console.log(chalk.cyan(`  select:admin `), 'config[redis] connecting...')
     const redis = require(__absolute + '/models/redis')
     await redis.init()
-    debug('config[redis] connected')
+    console.log(chalk.cyan(`  select:admin `), 'config[redis] connected')
 
-    debug('config[resources] connecting...')
+    console.log(chalk.cyan(`  select:admin `), 'config[resources] connecting...')
     const db = require(__absolute + '/models/db')
     await db.init()
-    debug('config[resources] connected')
+    console.log(chalk.cyan(`  select:admin `), 'config[resources] connected')
 
     process.send && process.send('ready')
-    debug('api connected')
+    console.log(chalk.cyan(`  select:admin `), 'api connected')
 
     next()
-  } catch (error) {
-    debug(error)
+  } catch (e) {
+    console.log(chalk.cyan(`  select:admin `), chalk.red('ERROR'), e.message)
   }
 }
 
