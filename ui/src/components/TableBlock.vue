@@ -109,7 +109,7 @@ div
             label.d-block.pb-1: strong.text-muted: small {{param.label || param.key}}
             input.form-control(:type='param.format' v-model='param.value')
           .mt-2
-          pre {{http_loading}}
+          //- pre {{http_loading}}
           button.btn.btn-light.border(type='submit' v-show='!block.autoload && block.params') {{block.label || '실행'}}
             h5(style='width: 100px' v-show='http_loading[i]'): span.mdi.mdi-loading.mdi-spin
           div.alert.alert-light.mt-1(v-if='block.update_result') 
