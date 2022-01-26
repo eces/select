@@ -1,8 +1,8 @@
 redis:
   master:
-    host: REDIS_HOST
-    port: REDIS_PORT
-    db: REDIS_DB
+    host: REDIS_MASTER_HOST
+    port: REDIS_MASTER_PORT
+    db: REDIS_MASTER_DB
 
 web: 
   base_url: WEB_BASE_URL
