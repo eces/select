@@ -8,7 +8,7 @@ const cors = require('cors')
 const morgan = require('morgan')
 const serveStatic = require('serve-static')
 const serveFavicon = require('serve-favicon')
-const debug = require('debug')('select:app')
+const {debug, info, error} = require(__absolute + '/log')('select:app')
 
 const routes = require('./routes')
 
@@ -18,7 +18,10 @@ app.set('port', process.env.PORT || 9400)
 
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')))
 
-if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
+if (global.__IS_CLI) {
+  app.disable('etag')
+  app.set('json spaces', 2)
+} else if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
   app.use(morgan('dev'))
   app.disable('etag')
   app.set('json spaces', 2)
@@ -26,10 +29,10 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
   morgan.token('uid', (req) => {
     return req.session && req.session.id || 0
   })
-  app.use(morgan(':method :status - :response-time ms [u:uid]', {
+  app.use(morgan(':method :status :url - :response-time ms [u::uid]', {
     skip: (req, res) => {
       url = req.originalUrl || req.url
-      if (url.startsWith('/healthcheck')) {
+      if (url.startsWith('/healthcheck') || url.startsWith('/css') || url.startsWith('/js')) {
         return true
       }
       return false
@@ -51,10 +54,6 @@ app.use(function(req, res, next) {
   req._json = true
   next(StatusError(404));
 });
-
-if (process.env.NODE_ENV == 'production') {
-  app.use(Sentry.Handlers.errorHandler());
-}
 
 app.use(function(err, req, res, next) {
   res.locals.message = err.message;
@@ -93,26 +92,51 @@ module.exports = app;
 module.exports.prehook = async (next) => {
   const c = global.config.get('select-configuration')
   console.log(chalk.cyan(`  select:admin `), chalk.bold('start'))
-  console.log(`NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
-  console.log(`DEBUG = ${chalk.bold( process.env.DEBUG )}`)
-  console.log(`PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
-  console.log(`config[title] = ${chalk.bold(c.title)}`)
-  console.log(`config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
-  console.log(`config[users] = ${chalk.bold(c.users.length)} item(s)`)
-  console.log(`config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
+  console.log(chalk.green(`✓`), `NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
+  console.log(chalk.green(`✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
+  console.log(chalk.green(`✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
+  console.log(chalk.green(`✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : 'N/A' )}`)
 
   try {
-    debug('config[resources] connecting')
+    global.config.get('redis.master.host')
+    global.config.get('redis.master.port')
+    global.config.get('redis.master.db')
+    global.config.get('web.base_url')
+    global.config.get('secret.access_token')
+    global.config.get('policy.session_expire')
+    // global.config.get('google.client_id')
+    // global.config.get('google.redirect_uri')
+    // global.config.get('google.client_secret')
+    // global.config.get('google_sheet.client_id')
+    // global.config.get('google_sheet.redirect_uri')
+    // global.config.get('google_sheet.client_secret')
+    global.config.get('select-configuration.title')
+    global.config.get('select-configuration.menus')
+    global.config.get('select-configuration.users')
+    global.config.get('select-configuration.pages')
+    global.config.get('select-configuration.resources')
+
+    console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
+    console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
+    console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
+    console.log(chalk.green(`✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
+
+    console.log(chalk.cyan(`  select:admin `), 'config[redis] connecting...')
+    const redis = require(__absolute + '/models/redis')
+    await redis.init()
+    console.log(chalk.cyan(`  select:admin `), 'config[redis] connected')
+
+    console.log(chalk.cyan(`  select:admin `), 'config[resources] connecting...')
     const db = require(__absolute + '/models/db')
     await db.init()
-    debug('config[resources] connected')
+    console.log(chalk.cyan(`  select:admin `), 'config[resources] connected')
 
     process.send && process.send('ready')
-    debug('api connected')
+    console.log(chalk.cyan(`  select:admin `), 'api connected')
 
     next()
-  } catch (error) {
-    debug(error)
+  } catch (e) {
+    console.log(chalk.cyan(`  select:admin `), chalk.red('ERROR'), e.message)
   }
 }
 
@@ -121,4 +145,38 @@ module.exports.posthook = async () => {
     chalk.cyan(`  select:admin `), 
     chalk.bold(`ready on http://localhost:${ (process.env.PORT || 9400) }`),
   )
+
+  try {
+    const axios = require('axios')
+    const os = require('os')
+    hostname = os.hostname()
+
+    const c = global.config.get('select-configuration')
+    const count_menu = (c.menus && c.menus.length) || 0
+    const count_user = (c.users && c.users.length) || 0
+    const count_page = (c.pages && c.pages.length) || 0
+    const count_resource = (c.resources && c.resources.length) || 0
+    let count_block = 0
+    if (count_page) {
+      for (const page of c.pages) {
+        count_block += (page.blocks && page.blocks.length) || 0
+      }
+    }
+
+    await axios.post('https://api.selectfromuser.com/api/license/2022-01-26', {
+      key: global.config['license-key'] || '',
+      json: {
+        env: process.env.NODE_ENV,
+        hostname,
+        count_menu,
+        count_user,
+        count_page,
+        count_resource,
+        count_block,
+      }
+    })
+  } catch (error) {
+    console.log(error.message)
+  }
+
 }

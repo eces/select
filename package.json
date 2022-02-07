@@ -1,6 +1,6 @@
 {
   "name": "selectfromuser",
-  "version": "1.0.4",
+  "version": "1.1.8",
   "description": "A tool for admin/backoffice UI using YAML with SQL, RESTful API connectivity.",
   "main": "index.js",
   "scripts": {
@@ -16,21 +16,27 @@
   "dependencies": {
     "axios": "^0.24.0",
     "chalk": "^4.1.2",
+    "commander": "^8.3.0",
     "config": "^3.0.1",
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "debugs": "^1.0.11",
     "errorhandler": "^1.5.0",
+    "excel-date-to-js": "^1.1.4",
     "express": "^4.16.4",
-    "g": "^2.0.1",
+    "googleapis": "^92.0.0",
     "http-errors": "^1.7.1",
+    "ioredis": "^4.28.3",
     "jsonwebtoken": "^8.5.0",
     "lodash": "^4.17.11",
+    "moment": "^2.29.1",
     "morgan": "^1.9.1",
     "mysql2": "^2.3.0",
     "serve-favicon": "^2.5.0",
     "serve-static": "^1.14.1",
-    "typeorm": "^0.2.12"
+    "typeorm": "^0.2.12",
+    "uuid": "^8.3.2",
+    "winston": "^3.4.0"
   },
   "devDependencies": {
     "ava": "^1.2.0",

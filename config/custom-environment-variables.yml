@@ -1,0 +1,23 @@
+redis:
+  master:
+    host: REDIS_MASTER_HOST
+    port: REDIS_MASTER_PORT
+    db: REDIS_MASTER_DB
+
+web: 
+  base_url: WEB_BASE_URL
+
+secret:
+  access_token: SECRET_ACCESS_TOKEN
+
+policy:
+  session_expire: POLICY_SESSION_EXPIRE
+
+google:
+  client_id: GOOGLE_SSO_CLIENT_ID
+  redirect_uri: GOOGLE_SSO_REDIRECT_URI
+  client_secret: GOOGLE_SSO_CLIENT_SECRET
+google_sheet:
+  client_id: GOOGLE_SHEET_CLIENT_ID
+  redirect_uri: GOOGLE_SHEET_REDIRECT_URI
+  client_secret: GOOGLE_SHEET_CLIENT_SECRET

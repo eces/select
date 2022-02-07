@@ -4,16 +4,20 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --dest=../dist",
+    "build": "NODE_ENV=production vue-cli-service build --dest=../dist",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@sentry/browser": "^6.17.2",
+    "@sentry/tracing": "^6.17.2",
     "axios": "^0.24.0",
     "bootstrap": "^5.1.2",
     "core-js": "^3.6.5",
     "gfm.css": "^1.1.2",
     "marked": "^4.0.4",
     "moment": "^2.29.1",
+    "node-sql-parser": "^4.0.8",
+    "numeral": "^2.0.6",
     "sass": "^1.43.4",
     "sql-formatter": "^4.0.2",
     "vue": "^2.6.11",

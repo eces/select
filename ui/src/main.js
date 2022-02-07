@@ -8,18 +8,23 @@ import './bootstrap.sass'
 import './main.sass'
 
 import $http from './http'
+
 import Vuex from 'vuex'
 import Store from './store'
-
 Vue.use(Vuex)
 Vue.prototype.$store = Store.create()
+Vue.use(Store.visibilityChange)
 Vue.prototype.$http = $http
 
 import moment from 'moment'
+import numeral from 'numeral'
 
 import VueGoodTablePlugin from 'vue-good-table';
+
+// import the styles
 import 'vue-good-table/dist/vue-good-table.css'
-Vue.use(VueGoodTablePlugin);
+
+// Vue.use(VueGoodTablePlugin);
 
 import VModal from 'vue-js-modal'
 Vue.use(VModal)
@@ -68,7 +73,14 @@ Vue.filter('sql', value => {
   }).trim()
 })
 
+Vue.filter('number', value => {
+  if (!value) return ''
+  return numeral(value).format('0,0')
+})
+
 new Vue({
   router,
   render: h => h(App)
 }).$mount('#app')
+
+// redeploy

@@ -1,18 +1,36 @@
 $font-size-base: 0.9rem
+
 $primary: #0D6EFD
+// $primary: #273c75
+// $primary: #375BA9
+// $primary: #466EC3
+// $primary: #FCA311
+// $primary: #007bff
+
+// $input-placeholder-color: #ccc
+
+// $border-radius: 0.7rem
+// $border-radius-lg: 1rem
+// $border-radius-sm: .5rem
 
 @import 'bootstrap/scss/bootstrap.scss'
+// @import 'bootstrap-vue/src/index.scss'
+
 
 .btn 
   font-size: 13px
   font-weight: bold 
   color: #555
   transition: none !important
+  // &:hover
+  //   box-shadow: 0px 0px 2px 0px rgba(0,0,0,0.3) !important
   &:active, &:focus
     box-shadow: 0px 0px 0px 1px rgba(#273c75, .3) !important
+    // box-shadow: none !important
     border-color: rgba(#273c75, .5) !important
 .btn-light:hover
   background-color: #f0f0f0
+  // background-color: #fff
   border-color: #999 !important
 
 .btn-light.text-success
@@ -20,6 +38,15 @@ $primary: #0D6EFD
   border-color: mix(#198754, #fff, 20%) !important
   &:hover
     background-color: mix(#198754, #fff, 25%) !important
+    // background-color: #f0f0f0
+    border-color: #999 !important
+
+.btn-light.text-danger
+  background-color: mix(#dc3545, #fff, 5%) !important
+  border-color: mix(#dc3545, #fff, 20%) !important
+  &:hover
+    background-color: mix(#dc3545, #fff, 15%) !important
+    // background-color: #f0f0f0
     border-color: #999 !important
 
 .btn-light.text-primary
@@ -27,4 +54,11 @@ $primary: #0D6EFD
   border-color: mix(#0D6EFD, #fff, 20%) !important
   &:hover
     background-color: mix(#0D6EFD, #fff, 15%) !important
+    // background-color: #f0f0f0
     border-color: #999 !important
+
+
+// user
+  
+.w-33
+  width: 33%
