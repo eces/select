@@ -18,7 +18,10 @@ app.set('port', process.env.PORT || 9400)
 
 app.use(serveFavicon(path.join(__dirname, 'public', 'favicon.ico')))
 
-if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
+if (global.__IS_CLI) {
+  app.disable('etag')
+  app.set('json spaces', 2)
+} else if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
   app.use(morgan('dev'))
   app.disable('etag')
   app.set('json spaces', 2)
@@ -26,10 +29,10 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV == 'development') {
   morgan.token('uid', (req) => {
     return req.session && req.session.id || 0
   })
-  app.use(morgan(':method :status - :response-time ms [u::uid]', {
+  app.use(morgan(':method :status :url - :response-time ms [u::uid]', {
     skip: (req, res) => {
       url = req.originalUrl || req.url
-      if (url.startsWith('/healthcheck')) {
+      if (url.startsWith('/healthcheck') || url.startsWith('/css') || url.startsWith('/js')) {
         return true
       }
       return false
@@ -93,10 +96,6 @@ module.exports.prehook = async (next) => {
   console.log(chalk.green(`✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
   console.log(chalk.green(`✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
   console.log(chalk.green(`✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : 'N/A' )}`)
-  console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
-  console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
-  console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
-  console.log(chalk.green(`✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
 
   try {
     global.config.get('redis.master.host')
@@ -111,6 +110,16 @@ module.exports.prehook = async (next) => {
     // global.config.get('google_sheet.client_id')
     // global.config.get('google_sheet.redirect_uri')
     // global.config.get('google_sheet.client_secret')
+    global.config.get('select-configuration.title')
+    global.config.get('select-configuration.menus')
+    global.config.get('select-configuration.users')
+    global.config.get('select-configuration.pages')
+    global.config.get('select-configuration.resources')
+
+    console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
+    console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
+    console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
+    console.log(chalk.green(`✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
 
     console.log(chalk.cyan(`  select:admin `), 'config[redis] connecting...')
     const redis = require(__absolute + '/models/redis')

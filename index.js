@@ -2,7 +2,9 @@ const fs = require('fs')
 const path = require('path')
 const __package = path.join(process.cwd(), 'package.json')
 
-if(fs.existsSync(__package)){
+global.__IS_CLI = fs.existsSync(__package) === false
+
+if(!global.__IS_CLI){
   require('debugs/init')
 }
 
