@@ -198,6 +198,7 @@ div
             :rows='result.rows'
             :search-options='result.block.searchOptions || {}'
             :select-options='result.block.selectOptions || {}'
+            :pagination-options='result.block.paginationOptions || {}'
             @on-search='onSearch'
           )
             template(slot='table-row' slot-scope='props')
@@ -285,6 +286,16 @@ export default {
     this.count_block_names = Object.keys(n).length
     for (const i in this.blocks) {
       const block = this.blocks[i]
+      if (block.paginationOptions) {
+        block.paginationOptions.firstLabel = block.paginationOptions.firstLabel || '처음'
+        block.paginationOptions.lastLabel = block.paginationOptions.lastLabel || '마지막'
+        block.paginationOptions.nextLabel = block.paginationOptions.nextLabel || '다음'
+        block.paginationOptions.prevLabel = block.paginationOptions.prevLabel || '이전'
+        block.paginationOptions.rowsPerPageLabel = block.paginationOptions.rowsPerPageLabel || '표시'
+        block.paginationOptions.ofLabel = block.paginationOptions.ofLabel || '/'
+        block.paginationOptions.pageLabel = block.paginationOptions.pageLabel || '페이지'
+        block.paginationOptions.allLabel = block.paginationOptions.allLabel || '전체'
+      }
       if (block.sql) {
         if (block.sqlType) {
           block.ast = {
