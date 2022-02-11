@@ -95,7 +95,7 @@ div
             div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
               label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
               input.form-control(:type='param.format' v-model='param.value')
-          button.btn.btn-light.border(type='submit' v-if='block.params && block.params.length && String(block.autoload) !== "true"') {{ block.label || '조회' }}
+          button.btn.btn-light.border(type='submit' v-if='String(block.autoload) !== "true"') {{ block.label || '조회' }}
     div(v-else-if='block.type == "http"')
       template(v-if='block.axios && block.axios.method && ["POST", "PUT"].includes(block.axios.method.toUpperCase())')
         .p-2.bg-light(v-if='block.name' style='margin-top: -1px'): strong.text-muted: small {{block.name}}
