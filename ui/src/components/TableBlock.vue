@@ -214,7 +214,7 @@ div
                     router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
                 template(v-else)
                   //- pre {{ref}}
-                  router-link(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: props.formattedRow[ref.valueFromColumn || props.column.field]})) }`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
+                  a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
               span(v-else) 
                 template(v-if='_isArray(props.row[props.column.field])')
                   span.me-2(v-for='value in props.row[props.column.field]') {{value}}
@@ -384,6 +384,13 @@ export default {
     })
   },
   methods: {
+    replace_url(prefix, href, value, ref) {
+      if (href.includes(`{{${ref.param}}}`)) {
+        return href.replace(`{{${ref.param}}}`, value)
+      } else {
+        return prefix + href + `#${ encodeURIComponent(JSON.stringify({[ref.param]: props.formattedRow[ref.valueFromColumn || props.column.field]})) }`
+      }
+    },
     _isArray: isArray,
     onSearch(r) {
       console.log('searchTemr: ', this.$refs['table0'][0].searchTerm)
