@@ -37,6 +37,7 @@ Install package from `npm install -g selectfromuser` or `yarn global add selectf
 
 ## Documentation
 
+- [Office Website 공식웹사이트](https://www.selectfromuser.com/)
 - [UI Components](https://app.selectfromuser.com/components)
 - [KR 개발자 문서](https://docs.selectfromuser.com/guide/)
 - [KR 업데이트 내역](https://www.selectfromuser.com/changelog)
@@ -119,3 +120,9 @@ select-configuration:
 ##### `npm test -- --grep="block"`
 
 ##### `npm test -- --grep="config"`
+
+## Support
+
+해당 프로젝트는 2020년부터 현재 2022년까지 Free/Team/Enterprise Plan 제공을 위해 개발팀이 계속 기능추가, 유지보수, 보안패치, 문서화를 하고 있습니다.
+
+[라이센스](https://github.com/eces/select/blob/main/LICENSE.md)에 따라 무료로 이용가능하며, 그 외에 유료플랜 가입이나 기술지원을 원하신다면 해당 페이지로 문의바랍니다. https://www.selectfromuser.com/pricing 
