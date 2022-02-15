@@ -1,8 +1,9 @@
 <div align="center">
-<h1>select admin</h1>
-Easy build for admin/backoffice on YAML based declarative way.
+<h1>Select Admin</h1>
+Fast build tool for admin/backoffice by YAML declarative way.
 </div>
 
+<br />
 <a href="https://www.npmjs.com/package/selectfromuser" target="_blank"><img src="https://img.shields.io/github/package-json/v/eces/select"></img></a>
 
 ## Features
@@ -12,7 +13,7 @@ Easy build for admin/backoffice on YAML based declarative way.
 - [ ] [pgsql](#) backend support. (partially suported not tested yet)
 - [ ] [mssql](#) backend support. (partially suported not tested yet)
 - [ ] [redis](#) backend support.
-- [ ] [Google Spreadsheet](#) backend support.
+- [x] [Google Spreadsheet](#) backend support.
 - [x] User management.
 - [ ] Permission and access control with roles.
 - [x] Customizable menus, groups and tabs.
@@ -36,7 +37,10 @@ Install package from `npm install -g selectfromuser` or `yarn global add selectf
 
 ## Documentation
 
-- [KR 가이드 설명서](https://docs.selectfromuser.com/guide/)
+- [UI Components](https://app.selectfromuser.com/components)
+- [KR 개발자 문서](https://docs.selectfromuser.com/guide/)
+- [KR 업데이트 내역](https://www.selectfromuser.com/changelog)
+- [KR 자주묻는질문](https://www.selectfromuser.com/faq)
 
 ### Sample Recipe
 
