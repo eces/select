@@ -90,14 +90,20 @@ process.on('SIGINT', () => {
 module.exports = app;
 
 module.exports.prehook = async (next) => {
-  const c = global.config.get('select-configuration')
-  console.log(chalk.cyan(`  select:admin `), chalk.bold('start'))
-  console.log(chalk.green(`✓`), `NODE_CONFIG_DIR = ${chalk.bold( process.env.NODE_CONFIG_DIR )}`)
-  console.log(chalk.green(`✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
-  console.log(chalk.green(`✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
-  console.log(chalk.green(`✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : 'N/A' )}`)
-
+  
   try {
+    const c = global.config.get('select-configuration')
+    console.log(chalk.bgCyan.white(` INFO `), chalk.cyan(`version ${global.CLI_VERSION}`)) 
+  
+    const names = global.config.util.getConfigSources().map(e => {
+      return e.name
+    })
+    console.log(chalk.bgCyan.white(` INFO `), chalk.cyan(`configuration from ${ names }`)) 
+    console.log(chalk.green(`  ✓`), `NODE_CONFIG_DIR = ${chalk.bold( path.join(__absolute, process.env.NODE_CONFIG_DIR))}`)
+    console.log(chalk.green(`  ✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
+    console.log(chalk.green(`  ✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
+    console.log(chalk.green(`  ✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : '무료버전' )}`)
+    
     global.config.get('redis.master.host')
     global.config.get('redis.master.port')
     global.config.get('redis.master.db')
@@ -116,10 +122,12 @@ module.exports.prehook = async (next) => {
     global.config.get('select-configuration.pages')
     global.config.get('select-configuration.resources')
 
-    console.log(chalk.green(`✓`), `config[title] = ${chalk.bold(c.title)}`)
-    console.log(chalk.green(`✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
-    console.log(chalk.green(`✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
-    console.log(chalk.green(`✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
+    console.log(chalk.green(`  ✓`), `config[title] = ${chalk.bold(c.title)}`)
+    console.log(chalk.green(`  ✓`), `config[menus] = ${chalk.bold(c.menus.length)} item(s)`)
+    console.log(chalk.green(`  ✓`), `config[users] = ${chalk.bold(c.users.length)} item(s)`)
+    console.log(chalk.green(`  ✓`), `config[pages] = ${chalk.bold(c.pages.length)} item(s)`)
+
+    console.log('')
 
     console.log(chalk.cyan(`  select:admin `), 'config[redis] connecting...')
     const redis = require(__absolute + '/models/redis')
@@ -137,13 +145,17 @@ module.exports.prehook = async (next) => {
     next()
   } catch (e) {
     console.log(chalk.cyan(`  select:admin `), chalk.red('ERROR'), e.message)
+    if (global.config.util.getConfigSources().length === 0) {
+      console.log(chalk.cyan(`  select:admin `), chalk.red('ERROR'), `설정 파일이 없습니다. default.yml, ${process.env.NODE_ENV || 'development'}.yml local.yaml`)
+    }
   }
 }
 
 module.exports.posthook = async () => {
   console.log(
     chalk.cyan(`  select:admin `), 
-    chalk.bold(`ready on http://localhost:${ (process.env.PORT || 9400) }`),
+    chalk.bold(`ready on`),
+    chalk.bold.underline(`http://localhost:${ (process.env.PORT || 9400) }`),
   )
 
   try {
@@ -166,6 +178,7 @@ module.exports.posthook = async () => {
     await axios.post('https://api.selectfromuser.com/api/license/2022-01-26', {
       key: global.config['license-key'] || '',
       json: {
+        version: global.CLI_VERSION,
         env: process.env.NODE_ENV,
         hostname,
         count_menu,

@@ -89,6 +89,9 @@ export default {
     }
   },
   mounted() {
+    setTimeout(() => {
+      document.title = this.$store.state.config.title || '셀렉트 어드민'
+    }, 0)
     console.log(process.env)
     this.load()
 

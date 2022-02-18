@@ -93,39 +93,9 @@ export default {
     }
   },
   mounted() {
-    // console.log('>page', this.page)
-    // console.log('>new load', this.current_page)
-    // this.load()
-    // if (!this.current_page?.path) {
-    //   // this.error = {
-    //   //   code: '01',
-    //   //   sqlMessage: 'No data for page'
-    //   // }
-    //   return
-    // }
-    // this.apply_hash_params()
-    // const n = {}
-    // for (const b of this.current_page.blocks) {
-    //   n[b.name] = true
-    // }
-    // this.count_block_names = Object.keys(n).length
-    // for (const i in this.current_page.blocks) {
-    //   const block = this.current_page.blocks[i]
-    //   console.log(block)
-    //   if (block.autoload === true) {
-    //     if (block.type == 'query')
-    //       this._get_query_result(block, i)
-    //     if (block.type == 'http')
-    //       this._get_http_result(block, i)
-    //   }
-    //   this.results[block.name] = {
-    //     gsheet_loading: false,
-    //     cols: [],
-    //     rows: [],
-    //   }
-    //   this.gsheet_loading.push(false)
-    //   this.http_loading.push(false)
-    // }
+    setTimeout(() => {
+      document.title = this.current_menu.name || this.$store.state.config.title || '셀렉트 어드민'
+    }, 100)
     setTimeout(() => {
       document.querySelector('#page input')?.focus()
     }, 300)

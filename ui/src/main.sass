@@ -24,8 +24,8 @@ html, body
 #app
   -webkit-font-smoothing: antialiased
   -moz-osx-font-smoothing: grayscale
-  height: 100vh
-  overflow: hidden
+  // height: 100vh
+  // overflow: hidden
 
 .scroll
   height: 100vh
@@ -45,14 +45,54 @@ body
 table.vgt-table
   font-size: 13px !important
   
+.table-responsive-lg
+  // width: max-content
+  overflow-x: scroll
+  padding: 3px
+
+  &.table-content-fit
+    width: fit-content !important
+    max-width: 100%
+
+div.vgt-responsive
+  // width: max-content
+  width: 100%
+
 table.vgt-responsive
   width: max-content !important
-  max-width: initial !important
+  max-width: max-content !important
   min-width: 100%
   margin-bottom: 0px
 
   &.table > :not(:first-child)
     border: 0 !important
+
+.table-content-fit
+  table.vgt-responsive
+    width: max-content !important
+    max-width: max-content !important
+    min-width: initial !important
+
+// 기본이 content-fit 인 경우
+// .table-responsive-lg
+//   width: max-content !important
+
+//   &.table-full
+//     width: 100% !important
+
+// table.vgt-responsive
+//   width: max-content !important
+//   // max-width: initial !important
+//   // min-width: 100%
+//   margin-bottom: 0px
+
+//   &.table > :not(:first-child)
+//     border: 0 !important
+
+// .table-full
+//   table.vgt-responsive
+//     width: 100% !important
+
 
 .vm--modal
   min-height: 90vh
