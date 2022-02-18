@@ -102,7 +102,7 @@ module.exports.prehook = async (next) => {
     console.log(chalk.green(`  ✓`), `NODE_CONFIG_DIR = ${chalk.bold( path.join(__absolute, process.env.NODE_CONFIG_DIR))}`)
     console.log(chalk.green(`  ✓`), `DEBUG = ${chalk.bold( process.env.DEBUG || "(FALSE)" )}`)
     console.log(chalk.green(`  ✓`), `PORT = ${chalk.bold( process.env.PORT || 9400 )}`)
-    console.log(chalk.green(`  ✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : '무료버전' )}`)
+    console.log(chalk.green(`  ✓`), `LICENSE_KEY = ${chalk.bold( process.env.LICENSE_KEY ? chalk.green('YES') : 'Free Plan 무료버전' )}`)
     
     global.config.get('redis.master.host')
     global.config.get('redis.master.port')

@@ -1,5 +1,49 @@
 #!/usr/bin/env node
 
+const { program } = require('commander');
+const ___package = require('../package.json')
+program.name('selectfromuser')
+program.version(___package.version, '-v, --version, -version, -V')
+// program.option('-w, --watch', 'watch config yaml files')
+
+let DEV = false
+
+program.command('dev')
+  .description('Serves local and watch reload on yaml config changes.')
+  .action(() => {
+    DEV = true
+  })
+program.parse()
+
+if (DEV) {
+  try {
+    return (async () => {
+      const { getInstalledPath } = require('get-installed-path')
+      const prefix_module_path = await getInstalledPath('selectfromuser')
+      const path = require('path')
+      console.log('Using path: ', prefix_module_path)
+      
+      const nodemon = require('nodemon')
+      nodemon({
+        script: path.join(prefix_module_path, 'bin/select'),
+        ext: 'yml yaml',
+        watch: process.env.NODE_CONFIG_DIR || '.',
+      });
+    
+      nodemon.on('start', function () {
+        console.log('App has started');
+      }).on('quit', function () {
+        console.log('App has quit');
+        process.exit();
+      }).on('restart', function (files) {
+        console.log('App restarted due to: ', files);
+      });
+    })()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 const app = require('..').app
 const http = require('http')
 

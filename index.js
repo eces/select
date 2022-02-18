@@ -8,10 +8,21 @@ if(!global.__IS_CLI){
   require('debugs/init')
 }
 
-const { program } = require('commander');
+// const { program } = require('commander');
 const ___package = require('./package.json')
-program.version(___package.version, '-v, --version, -version, -V')
-program.parse()
+// program.name('selectfromuser')
+// program.version(___package.version, '-v, --version, -version, -V')
+// program.option('-w, --watch', 'watch config yaml files')
+
+// const opts = program.opts()
+// if (opts.watch) {
+//   const nodemon = require('nodemon')
+//   nodemon('-e "yml" ./bin/select')
+//   return
+// }
+
+// program.parse()
+
 
 global.__absolute = __dirname
 process.env.NODE_CONFIG_DIR = process.env.NODE_CONFIG_DIR || '.'
