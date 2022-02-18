@@ -2,20 +2,22 @@
 
 const { program } = require('commander');
 const ___package = require('../package.json')
-program.name('selectfromuser')
-program.version(___package.version, '-v, --version, -version, -V')
-// program.option('-w, --watch', 'watch config yaml files')
-
-let DEV = false
-
-program.command('dev')
-  .description('Serves local and watch reload on yaml config changes.')
-  .action(() => {
-    DEV = true
-  })
-program.parse()
-
-if (DEV) {
+const opts = program
+  .name('selectfromuser')
+  .version(___package.version, '-v, --version, -version')
+  .option('-w, --watch, -watch', 'watch config yaml files')
+  .parse()
+  .opts()
+  
+// let DEV = false
+// program
+//   .command('dev')
+//   .description('Serves local and watch reload on yaml config changes.')
+//   .action(() => {
+//     DEV = true
+//   })
+ 
+if (opts.watch === true) {
   try {
     return (async () => {
       const { getInstalledPath } = require('get-installed-path')
