@@ -40,190 +40,197 @@ div
           template(v-else)
             input.form-control.d-inline.me-1(:type='param.format' v-model='param.value' :required='param.required')
         button.btn.btn-light.text-primary.border(type='submit') 조회
+  div(:class='page.containerClass + " done"' :style='page.containerStyle')
+    div(v-if='result_loading' v-for='(block, i) in blocks')
+      div(v-if='block.type == "query"')
+        template(v-if='block.ast && (block.ast.type == "update" || block.ast.type == "insert") ')
+          form.mb-2(
+            :class='block.class || "mx-2 border rounded shadow-sm" '
+            @submit.prevent='get_query_update(block, i)'
+          )
+            .p-2.bg-light(v-if='block.name' style='border-radius: 0.25rem 0.25rem 0 0'): strong.text-muted: small {{block.name}}
+            .p-2
+              div.alert.alert-light.border(v-if='block.error && block.error.code') 
+                strong {{block.error.sqlMessage}}
+                pre.mb-0: code {{block.error.sql | sql}}
+              div.alert.alert-light.border(v-if='show_log && block.update_result') 
+                code: pre.mb-0 {{block.update_result.sql | sql}}
+              div.alert.alert-light.border(v-else-if='show_log') 
+                code: pre.mb-0 {{block.sql | sql}}
+              div.alert.alert-light.border(v-if='$store.state.admin.active') 
+                code: pre.mb-0 {{block.sql | sql}}
+              
+              param-block(:params='block.params')
+              //- .d-flex
+                div.mb-3.me-1(v-for='param in block.params' v-if='param.key && !param.valueFromRow && param.valueFromEnv != "true" ')
+                  label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
+                  input.form-control(:type='param.format' v-model='param.value' :required='param.required')
 
-  div(v-if='result_loading' v-for='(block, i) in blocks')
-    div(v-if='block.type == "query"')
-      template(v-if='block.ast && (block.ast.type == "update" || block.ast.type == "insert") ')
-        form.mb-2(
-          :class='block.class || "mx-2 border rounded shadow-sm" '
-          @submit.prevent='get_query_update(block, i)'
-        )
-          .p-2.bg-light(v-if='block.name' style='border-radius: 0.25rem 0.25rem 0 0'): strong.text-muted: small {{block.name}}
-          .p-2
-            div.alert.alert-light.border(v-if='block.error && block.error.code') 
-              strong {{block.error.sqlMessage}}
-              pre.mb-0: code {{block.error.sql | sql}}
-            div.alert.alert-light.border(v-if='show_log && block.update_result') 
-              code: pre.mb-0 {{block.update_result.sql | sql}}
-            div.alert.alert-light.border(v-else-if='show_log') 
-              code: pre.mb-0 {{block.sql | sql}}
-            div.alert.alert-light.border(v-if='$store.state.admin.active') 
-              code: pre.mb-0 {{block.sql | sql}}
+              button.btn.btn-light.border.me-1(type='submit') 
+                span(v-show='block.sqlType == "update" || block.ast.type == "update"') 수정
+                span(v-show='block.sqlType == "insert" || block.ast.type == "insert"') 저장
+              span.ms-2(v-if='block.datetime')
+                span.mdi.mdi-check.text-success.me-1
+                small.text-success.me-2 완료 {{block.datetime}}
+              div.alert.alert-light.mt-1(v-if='block.update_result && block.update_result.info') 
+                strong {{block.update_result.info}}
+                small.text-muted  ({{block.delay/1000}}초 소요)
+              div.alert.alert-light.mt-1(v-else-if='block.update_result && block.update_result.affectedRows') 
+                strong.me-3 affectedRows: {{block.update_result.affectedRows}}
+                strong.me-3 insertId: {{block.update_result.insertId}}
+                small.text-muted  ({{block.delay/1000}}초 소요)
             
+            .mt-2
+        div(v-else)
+          div.alert.alert-light.border(v-if='show_log') 
+            code: pre.mb-0 {{block.sql | sql}}
+          div.alert.alert-light.border(v-if='$store.state.admin.active') 
+            code: pre.mb-0 {{block.sql | sql}}
+          form.p-2.mb-2(
+            v-if='block.params && block.params.length > 0 '
+            @submit.prevent='get_query_result(block, i)'
+          )
+            //- v-if='block.params.length > 0 || String(block.autoload) != "true" '
             param-block(:params='block.params')
-            //- .d-flex
-              div.mb-3.me-1(v-for='param in block.params' v-if='param.key && !param.valueFromRow && param.valueFromEnv != "true" ')
+            //- .d-flex(v-if='block.params.length > 0 ')
+              div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
                 label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
-                input.form-control(:type='param.format' v-model='param.value' :required='param.required')
-
-            button.btn.btn-light.border.me-1(type='submit') 
-              span(v-show='block.sqlType == "update" || block.ast.type == "update"') 수정
-              span(v-show='block.sqlType == "insert" || block.ast.type == "insert"') 저장
-            span.ms-2(v-if='block.datetime')
-              span.mdi.mdi-check.text-success.me-1
-              small.text-success.me-2 완료 {{block.datetime}}
-            div.alert.alert-light.mt-1(v-if='block.update_result && block.update_result.info') 
-              strong {{block.update_result.info}}
+                input.form-control(:type='param.format' v-model='param.value')
+            button.btn.btn-light.border(type='submit' v-if='String(block.autoload) !== "true"') {{ block.label || '조회' }}
+      div(v-else-if='block.type == "http"')
+        template(v-if='block.axios && block.axios.method && ["POST", "PUT"].includes(block.axios.method.toUpperCase())')
+          .p-2.bg-light(v-if='block.name' style='margin-top: -1px'): strong.text-muted: small {{block.name}}
+          div.alert.alert-light.border(v-if='$store.state.admin.active') 
+            code: pre.mb-0 {{block}}
+          form.p-2.mb-2(
+            v-if='block.params && block.params.length > 0 '
+            @submit.prevent='!http_loading[i] && get_http_update(block, i)'
+          )
+            param-block(:params='block.params')
+            //- div.mb-3(v-for='param in block.params' v-if='!param.valueFromRow && !param.valueFromEnv')
+              label.d-block.pb-1: strong.text-muted: small {{param.label || param.key}}
+              input.form-control(:type='param.format' v-model='param.value')
+            .mt-2
+            pre {{http_loading}}
+            button.btn.btn-light.border(type='submit' v-show='!block.autoload && block.params') {{block.label || '실행'}}
+              h5(style='width: 100px' v-show='http_loading[i]'): span.mdi.mdi-loading.mdi-spin
+            div.alert.alert-light.mt-1(v-if='block.update_result') 
+              pre {{block.update_result}}
               small.text-muted  ({{block.delay/1000}}초 소요)
-            div.alert.alert-light.mt-1(v-else-if='block.update_result && block.update_result.affectedRows') 
-              strong.me-3 affectedRows: {{block.update_result.affectedRows}}
-              strong.me-3 insertId: {{block.update_result.insertId}}
-              small.text-muted  ({{block.delay/1000}}초 소요)
-          
-          .mt-2
-      div(v-else)
-        div.alert.alert-light.border(v-if='show_log') 
-          code: pre.mb-0 {{block.sql | sql}}
-        div.alert.alert-light.border(v-if='$store.state.admin.active') 
-          code: pre.mb-0 {{block.sql | sql}}
-        form.p-2.mb-2(
-          @submit.prevent='get_query_result(block, i)'
-        )
-          //- v-if='block.params.length > 0 || String(block.autoload) != "true" '
+              
+        form.p-2.mb-2(v-else @submit.prevent='get_http_result(block, i)' v-if='block.params && block.params.length > 0 ')
+          div.alert.alert-light.border(v-if='$store.state.admin.active') 
+            code: pre.mb-0 {{block}}
           param-block(:params='block.params')
           //- .d-flex(v-if='block.params.length > 0 ')
             div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
               label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
-              input.form-control(:type='param.format' v-model='param.value')
-          button.btn.btn-light.border(type='submit' v-if='String(block.autoload) !== "true"') {{ block.label || '조회' }}
-    div(v-else-if='block.type == "http"')
-      template(v-if='block.axios && block.axios.method && ["POST", "PUT"].includes(block.axios.method.toUpperCase())')
-        .p-2.bg-light(v-if='block.name' style='margin-top: -1px'): strong.text-muted: small {{block.name}}
-        div.alert.alert-light.border(v-if='$store.state.admin.active') 
-          code: pre.mb-0 {{block}}
-        form.p-2.mb-2(
-          @submit.prevent='!http_loading[i] && get_http_update(block, i)'
-        )
-          param-block(:params='block.params')
-          //- div.mb-3(v-for='param in block.params' v-if='!param.valueFromRow && !param.valueFromEnv')
-            label.d-block.pb-1: strong.text-muted: small {{param.label || param.key}}
-            input.form-control(:type='param.format' v-model='param.value')
-          .mt-2
-          //- pre {{http_loading}}
-          button.btn.btn-light.border(type='submit' v-show='!block.autoload && block.params') {{block.label || '실행'}}
-            h5(style='width: 100px' v-show='http_loading[i]'): span.mdi.mdi-loading.mdi-spin
-          div.alert.alert-light.mt-1(v-if='block.update_result') 
-            pre {{block.update_result}}
-            small.text-muted  ({{block.delay/1000}}초 소요)
             
-      form.p-2.mb-2(v-else @submit.prevent='get_http_result(block, i)')
-        div.alert.alert-light.border(v-if='$store.state.admin.active') 
-          code: pre.mb-0 {{block}}
-        param-block(:params='block.params')
-        //- .d-flex(v-if='block.params.length > 0 ')
-          div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
-            label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
-          
-            template(v-if='param.datalist')
-              input.form-control.d-inline.me-1(:list='`${i}${param.label}`' v-model='param.value' required)
-              datalist(:id='`${i}${param.label}`')
-                option(:value='label' v-for='label in param.datalist') {{label}}
-            template(v-else-if='param.dropdown')
-              select.form-control.d-inline.me-1(v-model='param.value' required)
-                option(:value='label' v-for='label in param.dropdown') {{label}}
-            template(v-else)
-                input.form-control(:type='param.format' v-model='param.value')
-          
-        button.btn.btn-light.border(type='submit' v-show='block.showSubmitButton !== false && (!block.autoload || block.params)') {{block.label || '조회'}}
-    div(v-else-if='block.type == "markdown"')
-      strong.text-muted: small {{block.name}}
-      div.markdown-body.mb-3(v-html='$options.filters.marked(block.content)')
-  
-  div.alert.alert-light.border(v-if='error && error.hasOwnProperty()') 
-    strong {{error}}
-
-  div.alert.alert-light.border(v-if='error.code') 
-    strong {{error.sqlMessage}}
-    pre.mb-0: code {{error.sql | sql}}
-  
-  div.visible-hover-outer(v-for='result in results' v-if='n && result.block' :class='{"result-hover": admin_domain == "current"}')
-    div.alert.alert-light.mt-1(v-if='result.error && (result.error.code || result.error.message)') 
-      strong {{result.error.sqlMessage || result.error.message}}
-    div.alert.alert-light.border(v-if='show_log') 
-      code: pre.mb-0 {{result.block.sql | sql}}
-
-    template(v-if='result.block.display == "col-2"')
-      .d-flex.flex-wrap(:class='result.block.class')
-        div.d-flex.border-bottom(v-for='(item, k) in result.rows[0]' v-if='item !== undefined' style='width: 50%')
-          div.w-50.bg-light.text-muted.p-2
-            strong: small {{k}}
-          div.w-50.p-2.col-value 
-            template(v-if='result.block.viewModal && result.block.viewModal.useColumn && result.block.viewModal.useColumn == k')
-              a(href='#' @click.prevent.stop='open_modal(result.rows[0], result.block_idx, result.rows[0])') {{item}}
-            template(v-else-if='item && _isObject(item)')
-              pre: code {{ item}}
-            template(v-else)
-              span {{item}}
-        
+              template(v-if='param.datalist')
+                input.form-control.d-inline.me-1(:list='`${i}${param.label}`' v-model='param.value' required)
+                datalist(:id='`${i}${param.label}`')
+                  option(:value='label' v-for='label in param.datalist') {{label}}
+              template(v-else-if='param.dropdown')
+                select.form-control.d-inline.me-1(v-model='param.value' required)
+                  option(:value='label' v-for='label in param.dropdown') {{label}}
+              template(v-else)
+                  input.form-control(:type='param.format' v-model='param.value')
+            
+          button.btn.btn-light.border(type='submit' v-show='block.showSubmitButton !== false && (!block.autoload || block.params)') {{block.label || '조회'}}
+      div(v-else-if='block.type == "markdown"')
+        strong.text-muted: small {{block.name}}
+        div.markdown-body.mb-3(v-html='$options.filters.marked(block.content)')
     
-    template(v-else)
-      div.d-flex(v-if='result.cols')
-        template(v-if='result.block.actions')
-          template(v-for='(action, action_idx) in result.block.actions')
-            //- .d-flex
-            div(:class='action.containerClass || "ms-2"')
-              param-block(:params='action.params')
-              button.btn.border.btn-light(type='button' :class='action.class' :disabled='tableSelectedRows.length === 0' @click='action_button(action, action_idx, result.block_idx)'
-                title='클릭하여 선택된 항목을 진행'
-              ) 
-                span(v-if='result.block.selectOptions && result.block.selectOptions.disableSelectInfo && tableSelectedRows.length ') {{tableSelectedRows.length}}건 
-                span {{action.label || '실행'}}
-      .d-flex.mt-2(style='min-height: 30px' v-if='result.block')
-        strong.text-muted.me-2: small {{result.block.name}}
-        span: small.text-muted  {{result.rows.length}}건 ({{result.delay/1000}}초 소요)
-        small.text-muted.ms-auto.visible-hover 
-          a.text-reset.text-decoration-none.btn.btn-sm.btn-light(v-if='result.block.type == "query"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
-            span.mdi.mdi-file-table-outline.text-success
-            h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
-          a.text-reset.text-decoration-none.btn.btn-sm.btn-light(v-if='result.block.type == "http"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
-            span.mdi.mdi-file-table-outline.text-success
-            h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
-      div(v-if='result.cols')
-        .table-responsive-lg
-          vue-good-table(
-            @on-selected-rows-change="selectionChanged"
-            :ref='`table${n[result.block.name]}`'
-            styleClass='table table-hover vgt-table bordered vgt-responsive'
-            :columns='result.cols'
-            :rows='result.rows'
-            :search-options='result.block.searchOptions || {}'
-            :select-options='result.block.selectOptions || {}'
-            :pagination-options='result.block.paginationOptions || {}'
-            @on-search='onSearch'
-          )
-            template(slot='table-row' slot-scope='props')
-              span(v-if='props.column.field == "__조회__"')
-                a(v-if='result.block.viewModal && !result.block.viewModal.useColumn' href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') 조회
-              span(v-else-if='props.column.field == "__수정__"')
-                a(href='#' @click.prevent.stop='edit_modal(props.formattedRow, result.block_idx, props.row)') 수정
-              span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column[props.column.field]'
-                :set='ref = blocks[result.block_idx].refs_by_column[props.column.field]'
-              )
-                template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
-                  template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
-                    router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
-                template(v-else)
-                  //- pre {{ref}}
-                  a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
-              span(v-else) 
-                template(v-if='_isArray(props.row[props.column.field])')
-                  span.me-2(v-for='value in props.row[props.column.field]') {{value}}
-                template(v-else-if='result.block.viewModal && result.block.viewModal.useColumn == props.column.field') 
-                  template(v-if='props.formattedRow[props.column.field]')
-                    a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
+    div.alert.alert-light.border(v-if='error && error.hasOwnProperty()') 
+      strong {{error}}
+
+    div.alert.alert-light.border(v-if='error.code') 
+      strong {{error.sqlMessage}}
+      pre.mb-0: code {{error.sql | sql}}
+    
+    
+
+    div.visible-hover-outer(v-for='result in results' v-if='n && result.block' :class='{"result-hover": admin_domain == "current"}')
+      div.alert.alert-light.mt-1(v-if='result.error && (result.error.code || result.error.message)') 
+        strong {{result.error.sqlMessage || result.error.message}}
+      div.alert.alert-light.border(v-if='show_log') 
+        code: pre.mb-0 {{result.block.sql | sql}}
+
+      template(v-if='result.block.display == "col-2"')
+        .d-flex.flex-wrap(:class='result.block.class')
+          div.d-flex.border-bottom(v-for='(item, k) in result.rows[0]' v-if='item !== undefined' style='width: 50%')
+            div.w-50.bg-light.text-muted.p-2
+              strong: small {{k}}
+            div.w-50.p-2.col-value 
+              template(v-if='result.block.viewModal && result.block.viewModal.useColumn && result.block.viewModal.useColumn == k')
+                a(href='#' @click.prevent.stop='open_modal(result.rows[0], result.block_idx, result.rows[0])') {{item}}
+              template(v-else-if='item && _isObject(item)')
+                pre: code {{ item}}
+              template(v-else)
+                span {{item}}
+          
+      
+      template(v-else)
+        div.d-flex(v-if='result.cols')
+          template(v-if='result.block.actions')
+            template(v-for='(action, action_idx) in result.block.actions')
+              //- .d-flex
+              div(:class='action.containerClass || "ms-2"')
+                param-block(:params='action.params')
+                button.btn.border.btn-light(type='button' :class='action.class' :disabled='tableSelectedRows.length === 0' @click='action_button(action, action_idx, result.block_idx)'
+                  title='클릭하여 선택된 항목을 진행'
+                ) 
+                  span(v-if='result.block.selectOptions && result.block.selectOptions.disableSelectInfo && tableSelectedRows.length ') {{tableSelectedRows.length}}건 
+                  span {{action.label || '실행'}}
+        .d-flex.mt-2(
+          style='min-height: 30px' v-if='result.block' :class='result.block.containerClass'
+        )
+          strong.text-muted.me-2: small {{result.block.name}}
+          span: small.text-muted  {{result.rows.length}}건 ({{result.delay/1000}}초 소요)
+          small.text-muted.ms-4.visible-hover 
+            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "query"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
+              span.mdi.mdi-file-table-outline.text-success
+              small.text-muted  구글 시트에서 열기
+              h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
+            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "http"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
+              span.mdi.mdi-file-table-outline.text-success
+              h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
+        div(v-if='result.cols')
+          .table-responsive-lg(:class='result.block.containerClass || "done"')
+            vue-good-table(
+              @on-selected-rows-change="selectionChanged"
+              :ref='`table${n[result.block.name]}`'
+              styleClass='table table-hover vgt-table bordered vgt-responsive'
+              :columns='result.cols'
+              :rows='result.rows'
+              :search-options='result.block.searchOptions || {}'
+              :select-options='result.block.selectOptions || {}'
+              :pagination-options='result.block.paginationOptions || {}'
+              @on-search='onSearch'
+            )
+              template(slot='table-row' slot-scope='props')
+                span(v-if='props.column.field == "__조회__"')
+                  a(v-if='result.block.viewModal && !result.block.viewModal.useColumn' href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') 조회
+                span(v-else-if='props.column.field == "__수정__"')
+                  a(href='#' @click.prevent.stop='edit_modal(props.formattedRow, result.block_idx, props.row)') 수정
+                span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column[props.column.field]'
+                  :set='ref = blocks[result.block_idx].refs_by_column[props.column.field]'
+                )
+                  template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
+                    template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
+                      router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
                   template(v-else)
-                    span.d-block.w-100 (비어있음)
-                template(v-else) {{props.formattedRow[props.column.field]}}
+                    //- pre {{ref}}
+                    a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
+                span(v-else) 
+                  template(v-if='_isArray(props.row[props.column.field])')
+                    span.me-2(v-for='value in props.row[props.column.field]') {{value}}
+                  template(v-else-if='result.block.viewModal && result.block.viewModal.useColumn == props.column.field') 
+                    template(v-if='props.formattedRow[props.column.field]')
+                      a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
+                    template(v-else)
+                      span.d-block.w-100 (비어있음)
+                  template(v-else) {{props.formattedRow[props.column.field]}}
 </template>
 
 <script>
@@ -384,11 +391,12 @@ export default {
     })
   },
   methods: {
+    // replace_url(prefix, href, value, ref) {
     replace_url(prefix, href, value, ref) {
       if (href.includes(`{{${ref.param}}}`)) {
         return href.replace(`{{${ref.param}}}`, value)
       } else {
-        return prefix + href + `#${ encodeURIComponent(JSON.stringify({[ref.param]: props.formattedRow[ref.valueFromColumn || props.column.field]})) }`
+        return prefix + href + `#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`
       }
     },
     _isArray: isArray,
@@ -859,6 +867,7 @@ export default {
             rows: [],
           }
         }
+        this.results[block.name].block = block
         if (r.data.rows.length > 0) {
           console.log('>>>>>>>>>> columnOptions', block.columnOptions)
           if (block.columnOptions) {
@@ -954,7 +963,6 @@ export default {
 
         this.results[block.name].rows = r.data.rows
         this.results[block.name].block_idx = i
-        this.results[block.name].block = block
         this.results[block.name].delay = time_e - time_s
         this.current_block = block
 
