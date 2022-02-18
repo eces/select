@@ -19,6 +19,30 @@ global.config = require('config')
 global.DEFAULT_SECRET_HASH = '+x3VR4Fn<y3U6T&G'
 global.DEFAULT_SECRET_ACCESS_TOKEN = 'h{.V(eWpSbpU35J4'
 global.DEFAULT_POLICY_SESSION_EXPIRE = 43200
+global.CLI_VERSION = ___package.version
+
+
+setTimeout(async () => {
+  try {
+    const boxen = (await import('boxen')).default
+    const chalk = require('chalk')
+    const pj = require('package-json')
+    const latest = await pj('selectfromuser')
+    if (latest != ___package.version) {
+      
+    }
+    console.log(boxen(`Update available ${___package.version} -> ${ chalk.bold(latest.version)}\nRun ${ chalk.cyan('npm i -g selectfromuser') } to update`, {
+      padding: 1,
+      margin: 1,
+      borderColor: 'yellow',
+      // textAlignment: 'center',
+      title: '업데이트 알림',
+      titleAlignment: 'center',
+    }))
+  } catch (error) {
+    console.error(error)
+  }
+}, 0)
 
 const os = require('os');
 global.__hostname = os.hostname()
