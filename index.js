@@ -28,17 +28,16 @@ setTimeout(async () => {
     const chalk = require('chalk')
     const pj = require('package-json')
     const latest = await pj('selectfromuser')
-    if (latest != ___package.version) {
-      
+    if (latest.version != ___package.version) {
+      console.log(boxen(`Update available ${___package.version} -> ${ chalk.bold(latest.version)}\nRun ${ chalk.cyan('npm i -g selectfromuser') } to update`, {
+        padding: 1,
+        margin: 1,
+        borderColor: 'yellow',
+        // textAlignment: 'center',
+        title: '업데이트 알림',
+        titleAlignment: 'center',
+      }))
     }
-    console.log(boxen(`Update available ${___package.version} -> ${ chalk.bold(latest.version)}\nRun ${ chalk.cyan('npm i -g selectfromuser') } to update`, {
-      padding: 1,
-      margin: 1,
-      borderColor: 'yellow',
-      // textAlignment: 'center',
-      title: '업데이트 알림',
-      titleAlignment: 'center',
-    }))
   } catch (error) {
     console.error(error)
   }
