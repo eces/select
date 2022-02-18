@@ -8,7 +8,7 @@ div.d-flex.flex-wrap
   template(v-if='params.length > 0 ')
     //- div(v-for='(param, i) in params' v-if='param.key ? !param.valueFromRow && String(param.valueFromEnv || "") != "true" : true')
     
-    div.mb-3(v-for='(param, i) in params' v-if='param.key ? isVisible(param) : true' :class='param.class')
+    div.mb-3(v-for='(param, i) in params' v-if='param.key ? isVisible(param) : true' :class='param.class || "pe-1"')
       //- pre {{param}}
       //- label.text-muted.me-1(style='word-break: keep-all;'): strong: small {{param.label}}
       label.d-block.pb-1
@@ -22,7 +22,7 @@ div.d-flex.flex-wrap
         datalist(:id='`datalist_${id}_${i}`')
           option(:value='item.value' v-for='item in param.datalist' v-if='(param.values ? !param.values.includes(item.value) : true)') {{item.label}}
         div(v-if='param.datalistDropdown')
-          select.form-control.d-inline.me-1(v-model='param.value' :required='param.required' :size='param.dropdownSize || 1')
+          select.form-control.d-inline.me-1(v-model='param.value' :required='param.required' :size='param.dropdownSize || 1' @change='datalist_changed($event, param)')
             option(:value='item.value' v-for='item in param.datalist') {{item.label}}
         div(v-else)
           input.form-control.d-inline.me-1(:list='`datalist_${id}_${i}`' v-model='param.value' :required='param.required' @change='datalist_changed($event, param)')
@@ -31,7 +31,10 @@ div.d-flex.flex-wrap
         //- pre {{param.datalistLength}}
         //- pre {{param.values}}
         div(v-if='param.datalistPreview')
-          span.badge.text-dark.p-2.mt-1.me-1(v-for='item in param.datalist' v-if='item.value == param.value') {{item.label}}
+          template(v-if='param.datalistFromQuery')
+            span.badge.text-dark.p-2.mt-1.me-1(v-for='item in param.datalist' v-if='item.value == param.value') {{item.label}}
+          template(v-else)
+            span.badge.text-dark.p-2.mt-1.me-1(v-for='item in param.datalist' v-if='item.value == param.value') {{item.label}}
         //- pre {{param.datalistLength}}
         //- pre {{param.values}}
       template(v-else-if='param.radio && param.radioButtonGroup')
@@ -153,7 +156,10 @@ export default {
       this.$forceUpdate()
     },
     datalist_changed(event, param) {
-      if (!param.datalistLength || param.datalistLength <= 1) return true
+      if (!param.datalistLength || param.datalistLength <= 1) {
+        this.$forceUpdate()
+        return true
+      }
 
       console.log(param.value)
       if (!param.values) this.$set(param, 'values', [])
