@@ -59,6 +59,63 @@ router.post('/query', [only.id()], async (req, res, next) => {
       if (fields && fields.length) {
         let bind_sql = block.sql
         const bind_params = {}
+
+        {
+          let queryPlaceholder = ''
+          if (bind_sql.includes('{{query}}')) queryPlaceholder = '{{query}}'
+          if (bind_sql.includes('{{ query }}')) queryPlaceholder = '{{ query }}'
+          if (bind_sql.includes('{{query }}')) queryPlaceholder = '{{query }}'
+          if (bind_sql.includes('{{ query}}')) queryPlaceholder = '{{ query}}'
+          if (queryPlaceholder) {
+            let where = []
+            for (const f of fields) {
+              if (f.query && f.value) {
+                const value_lower = String(f.value).toLowerCase()
+                const value_upper = String(f.value).toUpperCase()
+  
+                if (f.query[value_lower]) {
+                  where.push(`(${ f.query[value_lower] })`)
+                } else if (f.query[value_upper]) {
+                  where.push(`(${ f.query[value_upper] })`)
+                } else if (f.query['']) {
+                  where.push(`(${ f.query[''] })`)
+                } else if (f.query['*']) {
+                  where.push(`(${ f.query['*'] })`)
+                }
+              }
+            }
+            where.push('1=1')
+            bind_sql = bind_sql.replace(queryPlaceholder, where.join(' AND '))
+          }
+        }
+        {
+          let queryPlaceholder = ''
+          if (bind_sql.includes('{{orderBy}}')) queryPlaceholder = '{{orderBy}}'
+          if (bind_sql.includes('{{ orderBy }}')) queryPlaceholder = '{{ orderBy }}'
+          if (bind_sql.includes('{{orderBy }}')) queryPlaceholder = '{{orderBy }}'
+          if (bind_sql.includes('{{ orderBy}}')) queryPlaceholder = '{{ orderBy}}'
+          if (queryPlaceholder) {
+            let orderBy = []
+            for (const f of fields) {
+              if (f.orderBy && f.value) {
+                const value_lower = String(f.value).toLowerCase()
+                const value_upper = String(f.value).toUpperCase()
+  
+                if (f.orderBy[value_lower]) {
+                  orderBy.push(`${ f.orderBy[value_lower] }`)
+                } else if (f.orderBy[value_upper]) {
+                  orderBy.push(`${ f.orderBy[value_upper] }`)
+                } else if (f.orderBy['']) {
+                  orderBy.push(`${ f.orderBy[''] }`)
+                } else if (f.orderBy['*']) {
+                  orderBy.push(`${ f.orderBy['*'] }`)
+                }
+              }
+            }
+            bind_sql = bind_sql.replace(queryPlaceholder, orderBy.join(', '))
+          }
+        }
+        
         for (const param of fields) {
           if (keys_by_name[param.key]) {
             param.value = keys_by_name[param.key].value
