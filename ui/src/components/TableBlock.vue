@@ -171,7 +171,7 @@ div
           
       
       template(v-else)
-        div.d-flex(v-if='result.cols')
+        div.d-flex.flex-wrap(v-if='result.cols')
           template(v-if='result.block.actions')
             template(v-for='(action, action_idx) in result.block.actions')
               //- .d-flex
@@ -461,14 +461,15 @@ export default {
       }
     },
     async action_button(action, action_idx, block_idx) {
-      const values = this.tableSelectedRows.map(e => e[`${ e.valueFromSelectedRowsAs || 'id'}`])
       if (action.confirmText) {
+        const values = this.tableSelectedRows.map(e => e[`${ action.valueFromSelectedRowsAs || 'id'}`])
         if (!confirm(`${action.confirmText}\n\n대상: ${values.join(', ')}`)) return false
       }
 
       try {
         let fields = (action.params || []).map(e => {
           if (e.valueFromSelectedRows) {
+            const values = this.tableSelectedRows.map(row => row[`${ e.valueFromSelectedRowsAs || 'id'}`])
             e.value = values
           }
           if (e.valueFromPrompt) {

@@ -25,8 +25,26 @@ module.exports.init = async () => {
         timezone: r.timezone || '+00:00',
         dateStrings: true,
         extra: {
-          charset: r.charset || "utf8mb4_general_ci",
+          charset: (r.extra && r.extra.charset) || r.charset || "utf8mb4_general_ci",
         },
+      })
+    } else if (r.type == 'postgres') {
+      await createConnection({
+        name: r.key,
+        type: 'postgres',
+        host: r.host,
+        port: r.port || 3306,
+        username: r.username,
+        password: Buffer.from(r.password, 'base64').toString('utf-8'),
+        database: r.database,
+        synchronize: false,
+        logging: process.env.NODE_ENV == 'development' ? true : false,
+        connectTimeoutMS: Math.max(10*1000, r.connectTimeoutMS || 10*1000),
+        timezone: r.timezone || '+00:00',
+        // dateStrings: true,
+        // extra: {
+        //   charset: (r.extra && r.extra.charset) || r.charset || "utf8mb4_general_ci",
+        // },
       })
     } else {
       throw new Error('server error: not supported resource[type].')
