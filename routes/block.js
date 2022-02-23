@@ -65,9 +65,6 @@ router.post('/query', [only.id()], async (req, res, next) => {
           }
 
           bind_params[param.key] = param.value
-          if (param.raw === true) {
-            bind_sql = bind_sql.replace(new RegExp(`\:${param.key}`, 'g'), param.value)
-          }
         }
         const [ escaped_bind_sql, escaped_bind_params ] = master_resource.driver
           .escapeQueryWithParameters(bind_sql, bind_params, {})
