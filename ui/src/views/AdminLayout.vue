@@ -10,15 +10,16 @@ $primary: #0D6EFD
   overflow: scroll
   .menu
     a
-      color: #555
+      color: #777
       text-decoration: none
       font-weight: 500
       font-size: 13px
       &:hover
         color: $primary
-        font-weight: bold
+        // font-weight: bold
       &.router-link-active
         font-weight: bold
+        color: #555
 .nav-top
   line-height: 50px
   .menu
@@ -35,7 +36,7 @@ $primary: #0D6EFD
 <template lang="pug">
 div
   div.bg-dark.nav-top.d-flex
-    router-link.text-reset(:to='`/${admin_domain}`')
+    router-link.text-reset(:to='`/`')
       strong.text-light.ms-3 {{this.$store.state.config.title || '셀렉트 어드민'}}
     .ms-auto.me-3.menu
       template(v-if='$store.state.is_admin')
@@ -53,7 +54,7 @@ div
         .mt-2 
         .pt-2.bg-white 
       template(v-else)
-        div.menu.bg-white(v-if='!menu.placement')
+        div.menu.bg-white(v-if='menu.placement != "tab-only" ')
           //- pre.m-0(style='font-size: 11px') {{menu}}
           template(v-if='menu.target')
             a.px-3.py-2.d-block(:href='menu.path' :target='menu.target') {{menu.name}} 
