@@ -121,7 +121,7 @@ router.post('/query', [only.id()], async (req, res, next) => {
             param.value = keys_by_name[param.key].value
           }
 
-          bind_params[param.key] = param.value
+          bind_params[param.key] = param.values || param.value || ''
         }
         const [ escaped_bind_sql, escaped_bind_params ] = master_resource.driver
           .escapeQueryWithParameters(bind_sql, bind_params, {})

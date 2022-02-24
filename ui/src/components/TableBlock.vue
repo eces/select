@@ -42,8 +42,10 @@ div
         button.btn.btn-light.text-primary.border(type='submit') 조회
   div(:class='page.containerClass + " done"' :style='page.containerStyle')
     div(v-if='result_loading' v-for='(block, i) in blocks')
+      //- pre {{block}}
       div(v-if='block.type == "query"')
-        template(v-if='block.ast && (block.ast.type == "update" || block.ast.type == "insert") ')
+        template(v-if='block.sqlType == "update" || block.sqlType == "insert" ')
+          //- pre {{block}}
           form.mb-2(
             :class='block.class || "mx-2 border rounded shadow-sm" '
             @submit.prevent='get_query_update(block, i)'
@@ -52,13 +54,11 @@ div
             .p-2
               div.alert.alert-light.border(v-if='block.error && block.error.code') 
                 strong {{block.error.sqlMessage}}
-                pre.mb-0: code {{block.error.sql | sql}}
+                code: pre.mb-0.bg-light.p-1.text-wrap {{block.error.sql | sql}}
               div.alert.alert-light.border(v-if='show_log && block.update_result') 
-                code: pre.mb-0 {{block.update_result.sql | sql}}
-              div.alert.alert-light.border(v-else-if='show_log') 
-                code: pre.mb-0 {{block.sql | sql}}
-              div.alert.alert-light.border(v-if='$store.state.admin.active') 
-                code: pre.mb-0 {{block.sql | sql}}
+                code: pre.mb-0.bg-light.p-1.text-wrap {{block.update_result.sql | sql}}
+              div.alert.alert-light.border(v-else-if='show_log || $store.state.admin.active') 
+                code: pre.mb-0.bg-light.p-1.text-wrap {{block.sql | sql}}
               
               param-block(:params='block.params')
               //- .d-flex
@@ -67,25 +67,22 @@ div
                   input.form-control(:type='param.format' v-model='param.value' :required='param.required')
 
               button.btn.btn-light.border.me-1(type='submit') 
-                span(v-show='block.sqlType == "update" || block.ast.type == "update"') 수정
-                span(v-show='block.sqlType == "insert" || block.ast.type == "insert"') 저장
+                span(v-show='block.sqlType == "update" ') 수정
+                span(v-show='block.sqlType == "insert" ') 저장
               span.ms-2(v-if='block.datetime')
                 span.mdi.mdi-check.text-success.me-1
                 small.text-success.me-2 완료 {{block.datetime}}
+                small.text-muted  ({{block.delay/1000}}초 소요)
               div.alert.alert-light.mt-1(v-if='block.update_result && block.update_result.info') 
                 strong {{block.update_result.info}}
-                small.text-muted  ({{block.delay/1000}}초 소요)
-              div.alert.alert-light.mt-1(v-else-if='block.update_result && block.update_result.affectedRows') 
+              //- div.alert.alert-light.mt-1(v-else-if='block.update_result && block.update_result.affectedRows') 
                 strong.me-3 affectedRows: {{block.update_result.affectedRows}}
                 strong.me-3 insertId: {{block.update_result.insertId}}
-                small.text-muted  ({{block.delay/1000}}초 소요)
             
             .mt-2
         div(v-else)
-          div.alert.alert-light.border(v-if='show_log') 
-            code: pre.mb-0 {{block.sql | sql}}
-          div.alert.alert-light.border(v-if='$store.state.admin.active') 
-            code: pre.mb-0 {{block.sql | sql}}
+          //- div.alert.alert-light.border(v-if='show_log || $store.state.admin.active') 
+          //-   code: pre.mb-0.bg-light.p-1.text-wrap {{block.sql | sql}}
           form.p-2.mb-2(
             v-if='block.params && block.params.length > 0 '
             @submit.prevent='get_query_result(block, i)'
@@ -111,7 +108,7 @@ div
               label.d-block.pb-1: strong.text-muted: small {{param.label || param.key}}
               input.form-control(:type='param.format' v-model='param.value')
             .mt-2
-            pre {{http_loading}}
+            //- pre {{http_loading}}
             button.btn.btn-light.border(type='submit' v-show='!block.autoload && block.params') {{block.label || '실행'}}
               h5(style='width: 100px' v-show='http_loading[i]'): span.mdi.mdi-loading.mdi-spin
             div.alert.alert-light.mt-1(v-if='block.update_result') 
@@ -144,9 +141,9 @@ div
     div.alert.alert-light.border(v-if='error && error.hasOwnProperty()') 
       strong {{error}}
 
-    div.alert.alert-light.border(v-if='error.code') 
+    div.alert.alert-light.border(v-if='error && error.code') 
       strong {{error.sqlMessage}}
-      pre.mb-0: code {{error.sql | sql}}
+      code: pre.mb-0.bg-light.p-1.text-wrap {{error.sql | sql}}
     
     
 
@@ -305,17 +302,18 @@ export default {
       }
       if (block.sql) {
         if (block.sqlType) {
-          block.ast = {
-            type: String(block.sqlType).toLowerCase()
-          }
+          // block.ast = {
+          //   type: String(block.sqlType).toLowerCase()
+          // }
         } else {
           try {
             const ast = parser.astify(block.sql, 'MySQL')
-            block.ast = ast
+            // block.ast = ast
+            block.sqlType = String(ast.type).toLowerCase()
           } catch (error) {
             alert('SQL 해석 실패')
             console.log('parse error: ', error)
-            block.ast = {}
+            // block.ast = {}
           }
         }
         // if (ast.type != 'select') {
@@ -324,7 +322,7 @@ export default {
       }
       if (String(block.autoload) == 'true') {
         // todo update/delete
-        if (block.ast && block.ast.type == 'select') {
+        if (block.sqlType == 'select') {
           this._get_query_result(block, i)
         }
       }
@@ -355,7 +353,7 @@ export default {
           }
 
         }
-        if (e.defaultValue) {
+        if (e.defaultValue !== undefined) {
           e.value = e.value || e.defaultValue
         }
         if (e.valueFromRow) {
@@ -437,7 +435,8 @@ export default {
         }
         
         if (r.data?.message != 'ok') {
-          alert(`옵션 가져오기 실패 \n\n${ JSON.stringify(r.data.error) }`)
+          const response = r.data?.error || r.data
+          alert(`입력폼 옵션 가져오기 실패. \n\ndatalistFromQuery: ${ JSON.stringify(response, null, '  ') }`)
         } else {
           // this._get_query_result_all()
           // this.$root.$emit('reloadAfterSubmit')
@@ -485,8 +484,6 @@ export default {
         const params = {}
         params.path = `${this.path}.blocks.${block_idx}.actions.${action_idx}`
         params.admin_domain = this.admin_domain
-        
-        const time_s = Date.now()
 
         let r;
         if (this.admin_domain == 'current') {
@@ -504,8 +501,6 @@ export default {
           })
         }
         
-        const time_e = Date.now()
-        let error 
         if (r.data?.message != 'ok') {
           alert(`실패 \n\n${ JSON.stringify(r.data.error) }`)
         } else {
@@ -533,15 +528,17 @@ export default {
         return
       }
       console.log(this.$route.hash)
-      const params = decodeURIComponent(this.$route.hash.slice(1))
-      if (params.length === 0) return
+      // const params = decodeURIComponent(this.$route.hash.slice(1))
+      // if (params.length === 0) return
 
-      let url_params
-      try {
-        url_params = JSON.parse(params)
-      } catch (error) {
-        return alert('URL 오류')
-      }
+      // let url_params
+      // try {
+      //   url_params = JSON.parse(params)
+      // } catch (error) {
+        //   return alert('URL 오류')
+      // }
+      const url_params = cloneDeep(this.$route.query)
+
       let autoload_all = false
       let autoload_block_idx = []
       for (const key in url_params) {
@@ -557,10 +554,23 @@ export default {
         if (this.page.blocks) {
           for (const i in this.page.blocks) {
             const block = this.page.blocks[i]
+            if (block.type == 'query') {
+              if (block.sqlType == 'insert' || block.sqlType == 'update') {
+                continue
+              }
+            }
             if (!block.params) continue
             for (const p of block.params) {
               if (p.key == key) {
-                this.$set(p, 'value', url_params[key])
+                if (isArray(url_params[key])) {
+                  this.$set(p, 'values', url_params[key])
+                } else {
+                  if (p.datalistLength > 0) {
+                    this.$set(p, 'values', [url_params[key]])
+                  } else {
+                    this.$set(p, 'value', url_params[key] || p.defaultValue || '')
+                  }
+                }
                 autoload_block_idx.push(i)
                 break
               }
@@ -642,9 +652,8 @@ export default {
         }
         
         const time_e = Date.now()
-        let error 
         if (r.data?.message != 'ok') {
-          this.$set(block, 'error', r.data.error)
+          this.$set(block, 'error', r.data?.error || {})
           this.$set(block, 'update_result', null)
         } else {
           const update_result = r.data.rows
@@ -685,10 +694,10 @@ export default {
 
             return e
           })
-          if (block.sqlType == "update" || block.ast.type == "update") {
+          if (block.sqlType == "update") {
             alert('수정했습니다.')
           }
-          else if (block.sqlType == "insert" || block.ast.type == "insert") {
+          else if (block.sqlType == "insert") {
             alert('저장했습니다.')
           }
         }
@@ -700,22 +709,27 @@ export default {
 
     async get_query_result_all() {
       const fields = this.get_state_params()
-      console.log('>>>>>>', fields)
+      console.log('get_query_result_all', fields)
       const p = {}
       for (const f of fields) {
-        p[f.key] = f.value
+        p[f.key] = f.value || f.defaultValue || ''
       }
-      const new_hash = '#'+encodeURIComponent(JSON.stringify(p))
-      if (location.hash == new_hash) {
+      this.$router.push({
+        query: p
+      }).catch(() => {
+        console.log("params not changed. let's reload.")
         this.apply_hash_params()
-      } else {
-        location.hash = new_hash
-      }
+      })
     },
 
     get_state_params() {
       const merged_params = {}
       for (const block of this.page.blocks) {
+        if (block.type == 'query') {
+          if (block.sqlType == 'insert' || block.sqlType == 'update') {
+            continue
+          }
+        }
         for (const p of block.params) {
           if (String(p.valueFromRow || 'false') == 'true') continue
           if (String(p.valueFromEnv || 'false') == 'true') continue
@@ -762,15 +776,32 @@ export default {
       if (fields.length) {
         const p = {}
         for (const f of fields) {
-          p[f.key] = String(f.value || '')
+          if (f.values || f.datalistLength > 1) {
+            const v = uniq(compact(f.values))
+            p[f.key] = v.length ? v : undefined
+          } else {
+            p[f.key] = String(f.value || f.defaultValue || '')
+          }
         }
-        // location.hash = '#'+encodeURIComponent(JSON.stringify(p))
-        const new_hash = '#'+encodeURIComponent(JSON.stringify(p))
-        if (location.hash == new_hash) {
+        // console.log('get_query_result', {p, fields})
+        // console.log('current', this.$route.query)
+        // console.log('next', p)
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            ...p,
+          },
+        }).catch((e) => {
+          console.log("params not changed. let's reload.")
           this.apply_hash_params()
-        } else {
-          location.hash = new_hash
-        }
+        })
+        // location.hash = '#'+encodeURIComponent(JSON.stringify(p))
+        // const new_hash = '#'+encodeURIComponent(JSON.stringify(p))
+        // if (location.hash == new_hash) {
+        //   this.apply_hash_params()
+        // } else {
+        //   location.hash = new_hash
+        // }
       } else {
         // location.hash = ''
         this._get_query_result(block, i, response_type)
@@ -779,8 +810,8 @@ export default {
 
     async _get_query_result(block, i, response_type = '') {
       try {
-        console.log('>>>>>>>>>> AST ', block.ast?.type)
-        if (block.ast && block.ast.type != 'select') {
+        console.log('block AST:', block.sqlType)
+        if (block.sqlType != 'select') {
           return console.log('non select canceled.')
         }
 
@@ -845,7 +876,7 @@ export default {
         const time_e = Date.now()
         
         if (r.data?.message != 'ok') {
-          this.error = r.data.error || r.data.message
+          this.error = r.data?.error || r.data?.message
           if (response_type == 'gsheet') {
             alert(`내보내기 실패: ${r.data.message}`)
           }
@@ -870,9 +901,7 @@ export default {
         }
         this.results[block.name].block = block
         if (r.data.rows.length > 0) {
-          console.log('>>>>>>>>>> columnOptions', block.columnOptions)
           if (block.columnOptions) {
-            console.log('>>>>>>>>>> columnOptions')
             this.results[block.name].cols = block.columnOptions.map(e => {
               if (e.tdClass && e.tdClass.length && e.tdClass.includes('return')) {
                 e.tdClass = new Function('row', e.tdClass)
@@ -989,12 +1018,12 @@ export default {
         for (const f of fields) {
           p[f.key] = String(f.value || '')
         }
-        const new_hash = '#'+encodeURIComponent(JSON.stringify(p))
-        if (location.hash == new_hash) {
+        this.$router.push({
+          query: p
+        }).catch(() => {
+          console.log("params not changed. let's reload.")
           this.apply_hash_params()
-        } else {
-          location.hash = new_hash
-        }
+        })
       } else {
         // location.hash = ''
         this._get_http_result(block, i)
@@ -1058,7 +1087,7 @@ export default {
 
         // console.log(r.data)
         if (r.data?.message != 'ok') {
-          this.error = r.data.error
+          this.error = r.data?.error
           return
         } else {
           this.error = {}
@@ -1157,7 +1186,7 @@ export default {
         this.http_loading = [...this.http_loading]
 
         if (r.data?.message != 'ok') {
-          this.error = r.data.error
+          this.error = r.data?.error
           return
         } else {
           this.error = {}

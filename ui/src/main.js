@@ -68,9 +68,14 @@ Vue.filter('marked', value => {
 
 Vue.filter('sql', value => {
   if (!value) return ''
-  return formatSQL(value, {
-    // uppercase: true,
-  }).trim()
+  try {
+    return formatSQL(value, {
+      // uppercase: true,
+    }).trim()
+  } catch (error) {
+    console.log(error)
+    return value
+  }
 })
 
 Vue.filter('number', value => {
