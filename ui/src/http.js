@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const $http = axios.create({
   withCredentials: false,
-  timeout: 5000,
+  timeout: 30000,
   baseURL: process.env.VUE_APP_API_URL,
   headers: {
 
