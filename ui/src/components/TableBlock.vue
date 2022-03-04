@@ -151,9 +151,11 @@ div
     )
       strong.text-secondary: small 데이터를 기다리고 있습니다. 응답이 늦다면 쿼리를 확인해주세요.
     
-    div.visible-hover-outer(v-for='result in results' v-if='n')
-      h5.fade-in(v-if='result.loading')
-        span.mdi.mdi-loading.mdi-spin.text-primary
+    div.position-absolute(style='margin-left: -10px')
+      div.visible-hover-outer(v-for='result in results' v-if='n'
+        style='width: 100px'
+      )
+        span.mdi.mdi-loading.mdi-spin.text-primary.fade-in(v-if='result.loading')
     div.visible-hover-outer(v-for='result in results' v-if='n && result.block' :class='{"result-hover": admin_domain == "current"}')
       div.alert.alert-light.mt-1(v-if='result.error && (result.error.code || result.error.message)') 
         strong {{result.error.sqlMessage || result.error.message}}
@@ -330,17 +332,18 @@ export default {
         //   return console.log('select query result for not starting with SELECT; canceled.')
         // }
       }
+      this.results[block.name] = {
+        gsheet_loading: false,
+        loading: false,
+        cols: [],
+        rows: [],
+      }
       if (String(block.autoload) == 'true') {
         // todo update/delete
         if (block.sqlType == 'select') {
+          this.results[block.name].loading = true
           this._get_query_result(block, i)
         }
-      }
-      this.results[block.name] = {
-        gsheet_loading: false,
-        loading: true,
-        cols: [],
-        rows: [],
       }
       this.gsheet_loading.push(false)
       this.http_loading.push(false)
@@ -820,6 +823,11 @@ export default {
     },
 
     async _get_query_result(block, i, response_type = '') {
+      console.log('block AST:', block.sqlType)
+      if (block.sqlType != 'select') {
+        return console.log('non select canceled.')
+      }
+
       if (block.fetching === true) {
         return console.log('block isFetching=true')
       }
@@ -837,11 +845,6 @@ export default {
       }, 5000)
 
       try {
-        console.log('block AST:', block.sqlType)
-        if (block.sqlType != 'select') {
-          return console.log('non select canceled.')
-        }
-
         if (response_type == 'gsheet') {
           this.gsheet_loading[i] = true
           this.gsheet_loading = [...this.gsheet_loading]
