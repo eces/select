@@ -145,8 +145,15 @@ div
       strong {{error.sqlMessage}}
       code: pre.mb-0.bg-light.p-1.text-wrap {{error.sql | sql}}
     
+    .alert.bg-light.shadow-sm.rounded-lg.position-fixed(
+      style='top: 10px; left: calc(50% - 200px); width: 400px'
+      v-show='query_warning'
+    )
+      strong.text-secondary: small 데이터를 기다리고 있습니다. 응답이 늦다면 쿼리를 확인해주세요.
     
-
+    div.visible-hover-outer(v-for='result in results' v-if='n')
+      h5.fade-in(v-if='result.loading')
+        span.mdi.mdi-loading.mdi-spin.text-primary
     div.visible-hover-outer(v-for='result in results' v-if='n && result.block' :class='{"result-hover": admin_domain == "current"}')
       div.alert.alert-light.mt-1(v-if='result.error && (result.error.code || result.error.message)') 
         strong {{result.error.sqlMessage || result.error.message}}
@@ -210,15 +217,15 @@ div
                   a(v-if='result.block.viewModal && !result.block.viewModal.useColumn' href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') 조회
                 span(v-else-if='props.column.field == "__수정__"')
                   a(href='#' @click.prevent.stop='edit_modal(props.formattedRow, result.block_idx, props.row)') 수정
-                span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column[props.column.field]'
+                span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column && blocks[result.block_idx].refs_by_column[props.column.field]'
                   :set='ref = blocks[result.block_idx].refs_by_column[props.column.field]'
                 )
-                  template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
-                    template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
-                      router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
-                  template(v-else)
-                    //- pre {{ref}}
-                    a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
+                  template(v-if='ref')
+                    template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
+                      template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
+                        router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
+                    template(v-else)
+                      a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
                 span(v-else) 
                   template(v-if='_isArray(props.row[props.column.field])')
                     span.me-2(v-for='value in props.row[props.column.field]') {{value}}
@@ -270,6 +277,9 @@ export default {
       result_loading: false,
       n: {},
       tableSelectedRows: [],
+
+      query_warning: '',
+      query_warning_timeout: null,
     }
   },
   watch: {
@@ -328,6 +338,7 @@ export default {
       }
       this.results[block.name] = {
         gsheet_loading: false,
+        loading: true,
         cols: [],
         rows: [],
       }
@@ -809,6 +820,22 @@ export default {
     },
 
     async _get_query_result(block, i, response_type = '') {
+      if (block.fetching === true) {
+        return console.log('block isFetching=true')
+      }
+      block.fetching = true
+
+      this.query_warning = false
+      const slow_timeout = setTimeout(() => {
+        this.query_warning = true
+        if (this.query_warning_timeout) {
+          clearTimeout(this.query_warning_timeout)
+        }
+        this.query_warning_timeout = setTimeout(() => {
+          this.query_warning = false
+        }, 5000)
+      }, 5000)
+
       try {
         console.log('block AST:', block.sqlType)
         if (block.sqlType != 'select') {
@@ -1000,6 +1027,11 @@ export default {
         console.log(error)
         alert(error.message)
       }
+      if (block && this.results[block.name]) {
+        this.results[block.name].loading = false
+      }
+      clearTimeout(slow_timeout)
+      block.fetching = false
     },
 
     async get_http_result(block, i) {
