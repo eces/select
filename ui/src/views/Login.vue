@@ -50,7 +50,7 @@ div
       //- .border-top.my-4(style='opacity: 0.5')
       .border-top.my-4(style='opacity: 0.5')
       footer.d-flex
-        a.me-auto(target='_blank' href='https://selectfromuser.com') 설치형 버전:{{env.VUE_APP_VERSION}}
+        a.me-auto(target='_blank' href='https://selectfromuser.com/changelog') 설치형 버전:{{env.VUE_APP_VERSION}}
           strong.ms-2(v-show='next_version' style='background-color: rgb(253, 236, 200); color: rgb(64, 44, 27); padding: 0.25rem; border-radius: 3px; font-weight: 600; border: solid 1px rgba(0,0,0,0.015)') 새로운 업데이트 {{ next_version }}
         a.ms-auto(target='_blank' href='https://docs.selectfromuser.com') 도움말
   //- div.bg-white.m-4.p-4
