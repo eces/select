@@ -1,21 +1,8 @@
 import Vuex from 'vuex'
 import $http from './http'
-import uniq from 'lodash/uniq'
-import compact from 'lodash/compact'
-import flatten from 'lodash/flatten'
-import {sortBy, keyBy} from 'lodash'
-import * as Sentry from "@sentry/browser";
-import { Integrations } from "@sentry/tracing";
+import {keyBy} from 'lodash'
 
-Sentry.init({
-  dsn: "https://2e24eeaf0dde4e699b0ebf4016a75a33@o1100664.ingest.sentry.io/6168586",
-  integrations: [new Integrations.BrowserTracing()],
-
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-});
+import * as Sentry from "@sentry/vue";
 
 const delay = ms => new Promise(_ => setTimeout(_, ms))
 

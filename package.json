@@ -14,6 +14,8 @@
     "selectfromuser": "bin/select"
   },
   "dependencies": {
+    "@sentry/node": "^6.18.1",
+    "@sentry/tracing": "^6.18.1",
     "axios": "^0.24.0",
     "boxen": "^6.2.1",
     "chalk": "^4.1.2",

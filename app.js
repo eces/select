@@ -2,6 +2,7 @@ global.StatusError = require('http-errors')
 global._ = require('lodash').noConflict()
 
 const express = require('express')
+const Sentry = require('@sentry/node')
 const chalk = require('chalk')
 const path = require('path')
 const cors = require('cors')
@@ -42,8 +43,36 @@ if (global.__IS_CLI) {
 
 app.use(express.json({limit: '1MB', type: 'application/json'}));
 app.use(express.urlencoded({ extended: false }));
-
 app.use(cors())
+
+if (process.env.NODE_ENV == 'production') {
+  let integrations = []
+  if (process.env.NO_TRACE === undefined) {
+    const Tracing = require("@sentry/tracing")
+    integrations = [
+      // enable HTTP calls tracing
+      new Sentry.Integrations.Http({ tracing: true }),
+      // enable Express.js middleware tracing
+      new Tracing.Integrations.Express({ app }),
+    ]
+  }
+  Sentry.init({
+    dsn: "https://059e1abaeff240b79c218a15f6f431d3@o1100664.ingest.sentry.io/6246113",
+    integrations,
+  
+    // Set tracesSampleRate to 1.0 to capture 100%
+    // of transactions for performance monitoring.
+    // We recommend adjusting this value in production
+    tracesSampleRate: 1.0,
+  });
+  
+  // RequestHandler creates a separate execution context using domains, so that every
+  // transaction/span/breadcrumb is attached to its own Hub instance
+  app.use(Sentry.Handlers.requestHandler());
+  // TracingHandler creates a trace for every incoming request
+  app.use(Sentry.Handlers.tracingHandler());
+}
+
 app.use('/', routes);
 app.use(serveStatic(path.join(__dirname, 'dist')))
 app.get('/:path(*)', (req, res) => {
@@ -54,6 +83,8 @@ app.use(function(req, res, next) {
   req._json = true
   next(StatusError(404));
 });
+
+app.use(Sentry.Handlers.errorHandler());
 
 app.use(function(err, req, res, next) {
   res.locals.message = err.message;
