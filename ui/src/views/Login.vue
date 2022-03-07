@@ -51,6 +51,7 @@ div
       .border-top.my-4(style='opacity: 0.5')
       footer.d-flex
         a.me-auto(target='_blank' href='https://selectfromuser.com') 설치형 버전:{{env.VUE_APP_VERSION}}
+          strong.ms-2(v-show='next_version' style='background-color: rgb(253, 236, 200); color: rgb(64, 44, 27); padding: 0.25rem; border-radius: 3px; font-weight: 600; border: solid 1px rgba(0,0,0,0.015)') 새로운 업데이트 {{ next_version }}
         a.ms-auto(target='_blank' href='https://docs.selectfromuser.com') 도움말
   //- div.bg-white.m-4.p-4
 
@@ -63,6 +64,8 @@ div
 
 import { uniqBy, keyBy, sortBy, groupBy } from 'lodash'
 // import Tiptap from '@/components/Tiptap.vue'
+
+import axios from 'axios'
 
 export default {
   name: 'Page',
@@ -93,6 +96,7 @@ export default {
         code: '',
       },
       challenge_id: 0,
+      next_version: '',
     }
   },
   async mounted() {
@@ -112,6 +116,20 @@ export default {
     this.done = true
     
     this.load()
+
+    try {
+      
+      const r = await axios.get('https://trello.com/c/uRIRAmgE/1-latest-ui-version.json')
+      const next_version = r.data.desc
+      const prev_num = +String(this.env.VUE_APP_VERSION).replace(/-/g, '') || 0
+      const next_num = +String(next_version).replace(/-/g, '') || 0
+      console.log(next_version, prev_num, next_num)
+      if (prev_num < next_num) {
+        this.next_version = next_version
+      }
+    } catch (error) {
+      console.log('failed to load up-to-date version', error)
+    }
   },
   methods: {
     load() {
