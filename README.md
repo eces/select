@@ -2,7 +2,7 @@
 <h1>Select Admin</h1>
 Fast build tool for admin/backoffice by YAML declarative way.
 <br >
-<img src="https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png" class="kg-image" alt="" loading="lazy" width="1394" height="778" srcset="https://blog.selectfromuser.com/content/images/size/w600/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 600w, https://blog.selectfromuser.com/content/images/size/w1000/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1000w, https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1394w" sizes="(min-width: 720px) 720px">
+<img src="https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png" alt="" loading="lazy" width="720" srcset="https://blog.selectfromuser.com/content/images/size/w600/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 600w, https://blog.selectfromuser.com/content/images/size/w1000/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1000w, https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1394w" sizes="(min-width: 720px) 720px">
 </div>
 
 <br />
