@@ -1,6 +1,8 @@
 <div align="center">
 <h1>Select Admin</h1>
 Fast build tool for admin/backoffice by YAML declarative way.
+<br >
+<img src="https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png" class="kg-image" alt="" loading="lazy" width="1394" height="778" srcset="https://blog.selectfromuser.com/content/images/size/w600/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 600w, https://blog.selectfromuser.com/content/images/size/w1000/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1000w, https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1394w" sizes="(min-width: 720px) 720px">
 </div>
 
 <br />
@@ -37,11 +39,12 @@ Install package from `npm install -g selectfromuser` or `yarn global add selectf
 
 ## Documentation
 
-- [Office Website 공식웹사이트](https://www.selectfromuser.com/)
-- [UI Components](https://app.selectfromuser.com/components)
-- [KR 개발자 문서](https://docs.selectfromuser.com/guide/)
-- [KR 업데이트 내역](https://www.selectfromuser.com/changelog)
-- [KR 자주묻는질문](https://www.selectfromuser.com/faq)
+#### ko-KR
+
+- [개발자 문서](https://docs.selectfromuser.com/guide/)
+- [Official Website 공식웹사이트](https://www.selectfromuser.com/)
+- [UI Components 컴포넌트](https://app.selectfromuser.com/components)
+- [업데이트 내역](https://www.selectfromuser.com/changelog)
 
 ### Sample Recipe
 
