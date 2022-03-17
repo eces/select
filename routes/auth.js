@@ -97,7 +97,6 @@ router.get('/me', [only.id()], async (req, res, next) => {
     }
 
     if (userdata) {
-      debug({userdata})
       userdata = JSON.parse(userdata)
     }
 

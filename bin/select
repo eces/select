@@ -2,24 +2,43 @@
 
 const { program } = require('commander');
 const ___package = require('../package.json')
-const opts = program
+program
   .name('selectfromuser')
   .version(___package.version, '-v, --version, -version')
   .option('-w, --watch, -watch', 'watch config yaml files')
-  .parse()
-  .opts()
-  
-// let DEV = false
+  .option('-f, --force, -force', 'force create config yaml')
+
 // program
-//   .command('dev')
-//   .description('Serves local and watch reload on yaml config changes.')
+//   .command('create')
+//   .description('creates new default.yml')
 //   .action(() => {
-//     DEV = true
+//     console.log('WOW')
 //   })
- 
-if (opts.watch === true) {
-  try {
-    return (async () => {
+
+const parsed = program.parse()
+const commands = parsed.args
+const opts = program.opts()
+
+if (commands[0] == 'create') {
+  (async () => {
+    try {
+      const cp = require('cp-file')
+      const path = require('path')
+      await cp(path.join(__dirname, '../mock/default.yml'), path.join(process.cwd(), 'default.yml'), {
+        overwrite: opts.force || false
+      })
+      console.log('A file created: default.yml')
+    } catch (error) {
+      if (String(error.message).includes('EEXIST')) {
+        return console.error('The file already exists: default.yml')
+      }
+      console.error(error)
+    }
+  })()
+  return 
+} else if (opts.watch === true) {
+  (async () => {
+    try {
       const { getInstalledPath } = require('get-installed-path')
       const prefix_module_path = await getInstalledPath('selectfromuser')
       const path = require('path')
@@ -40,10 +59,12 @@ if (opts.watch === true) {
       }).on('restart', function (files) {
         console.log('App restarted due to: ', files);
       });
-    })()
-  } catch (error) {
-    console.error(error)
-  }
+    } catch (error) {
+      console.error(error)
+      return
+    }
+  })()
+  return
 }
 
 const app = require('..').app

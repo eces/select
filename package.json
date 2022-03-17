@@ -1,6 +1,6 @@
 {
   "name": "selectfromuser",
-  "version": "1.1.20",
+  "version": "1.1.23",
   "description": "A tool for admin/backoffice UI using YAML with SQL, RESTful API connectivity.",
   "main": "index.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "api": "PORT=8000 NODE_ENV=development nodemon ./bin/select --ignore ./tests --ignore ./ui --watch ./config/local.yml --watch ."
   },
   "bin": {
-    "selectfromuser": "bin/select"
+    "selectfromuser": "bin/select",
+    "slt": "bin/select"
   },
   "dependencies": {
     "@sentry/node": "^6.18.1",
@@ -22,6 +23,7 @@
     "commander": "^8.3.0",
     "config": "^3.0.1",
     "cors": "^2.8.5",
+    "cp-file": "^9.1.0",
     "debug": "^4.1.1",
     "debugs": "^1.0.11",
     "errorhandler": "^1.5.0",
