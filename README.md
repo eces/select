@@ -16,7 +16,7 @@
 
 - [x] [mysql](#) backend support.
 - [x] [RESTful HTTP API](#) backend support.
-- [ ] [pgsql](#) backend support. (partially suported not tested yet)
+- [x] [pgsql](#) backend support. (partially suported not tested yet)
 - [ ] [mssql](#) backend support. (partially suported not tested yet)
 - [ ] [redis](#) backend support.
 - [x] [Google Spreadsheet](#) backend support.
@@ -59,12 +59,21 @@ select-configuration:
   title: Welcome to Select
   menus:
     - group: 회원
-      name: 고객 목록
-      path: users/list
+      name: 고객 관리
+      path: users
+      placement: menu-only
+      redirect: users/active
+    
+    - group: 회원
+      name: 최근가입자 목록
+      path: users/active
+      placement: tab-only
+
     - group: 회원
       name: 휴면회원 목록
       path: users/dormant
       placement: tab-only
+
     - group: 회원
       name: 마케팅 수신동의
       path: users/promotion
@@ -74,6 +83,7 @@ select-configuration:
       name: 공식 문서 
       path: https://docs.selectfromuser.com
       target: _blank
+
     - group: 기타메뉴
       name: 클라우드 이용
       path: https://selectfromuser.com
@@ -85,38 +95,69 @@ select-configuration:
     - id: admin
       pw: YWRtaW4=
       roles:
-        - admin
+  
+  integrations:
+    google-sso:
+      enabled: false
+      restrict-domain: 
+    google-spreadsheets:
+      restrict-domain: 
   
   pages:
-    - path: users/list
-      blocks:
+    - path: users/active
+      blocks: 
         - type: markdown
           content: >
-            # 셀렉트에 오신것을 환영합니다.
+            ## 7일 가입자 조회
         
     - path: users/dormant
       blocks:
         - type: markdown
           content: >
-            # 셀렉트에 오신것을 환영합니다.
+            ## 휴면회원 조회
         
     - path: users/promotion
       blocks:
         - type: markdown
           content: >
-            # 셀렉트에 오신것을 환영합니다.
+            ## 동의/미동의 조회
         
   resources:
-    # - key: mysql.dev
+    # - key: mysql
     #   type: mysql
-    #   host: YOUR_HOST.rds.amazonaws.com
+    #   host: YOUR_HOST.ap-northeast-2.rds.amazonaws.com
     #   port: 3306
-    #   username: (DB account name)
-    #   password: (base64 encoded DB password. Encoding with click, please see this: https://docs.selectfromuser.com/guide/connection.html)
-    #   database: (DB collection name)
-    #   requestTimeout: 3000
+    #   username: (계정이름)
+    #   password: (base64 인코딩된 계정 비밀번호)
+    #   database: (데이터베이스이름)
     #   timezone: '+00:00'
-    #   charset: "utf8mb4_general_ci"
+    #   extra:
+    #     charset: utf8mb4_general_ci
+
+redis:
+  master:
+    host: 127.0.0.1
+    port: 6379
+    db: 0
+
+web: 
+  base_url: http://localhost:9400
+
+secret:
+  access_token: SECRET
+
+policy:
+  session_expire: 48300
+
+google:
+  client_id: 
+  redirect_uri: 
+  client_secret: 
+
+google_sheet:
+  client_id: 
+  redirect_uri: 
+  client_secret: 
 ```
 
 
@@ -132,4 +173,4 @@ select-configuration:
 
 해당 프로젝트는 2020년부터 현재 2022년까지 Free/Team/Enterprise Plan 제공을 위해 개발팀이 계속 기능추가, 유지보수, 보안패치, 문서화를 하고 있습니다.
 
-[라이센스](https://github.com/eces/select/blob/main/LICENSE.md)에 따라 무료로 이용가능하며, 그 외에 유료플랜 가입이나 기술지원을 원하신다면 해당 페이지로 문의바랍니다. https://www.selectfromuser.com/pricing 
+직접 설치하여 비용없이 무료이용 가능합니다. 그외에 정책은 [라이센스](https://github.com/eces/select/blob/main/LICENSE)를 따릅니다. 기능제안, 기술지원은 해당 페이지로 문의바랍니다. https://www.selectfromuser.com
