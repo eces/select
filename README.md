@@ -2,6 +2,11 @@
 <h1>Select Admin</h1>
 Fast build tool for admin/backoffice by YAML declarative way.
 <br />
+<div style="display: flex; justify-content: center">
+  <a href="https://www.npmjs.com/package/selectfromuser" target="_blank" style="margin: 0.25rem"><img src="https://img.shields.io/npm/v/selectfromuser" /></a>
+  <a href="https://www.npmjs.com/package/selectfromuser" target="_blank" style="margin: 0.25rem"><img src="https://img.shields.io/npm/dm/selectfromuser" /></a>
+  <a href="https://github.com/eces/select" target="_blank" style="margin: 0.25rem"><img src="https://img.shields.io/github/last-commit/eces/select" /></a>
+</div>
 <img src="https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png" alt="" loading="lazy" width="720" srcset="https://blog.selectfromuser.com/content/images/size/w600/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 600w, https://blog.selectfromuser.com/content/images/size/w1000/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1000w, https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1394w" sizes="(min-width: 720px) 720px">
 </div>
 
