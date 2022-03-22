@@ -48,6 +48,11 @@ import 'vue-good-table/dist/vue-good-table.css'
 import VModal from 'vue-js-modal'
 Vue.use(VModal)
 
+import "vue-simple-context-menu/dist/vue-simple-context-menu.css";
+import VueSimpleContextMenu from "vue-simple-context-menu";
+
+Vue.component("vue-simple-context-menu", VueSimpleContextMenu);
+
 import { format as formatSQL } from 'sql-formatter'
 import {marked} from 'marked'
 
@@ -69,6 +74,11 @@ Vue.filter('time', value => {
 Vue.filter('ts_datetime', value => {
   if (!value) return ''
   return moment(value).format('YYYY-MM-DD HH:mm')
+})
+
+Vue.filter('datetimeA', value => {
+  if (!value) return ''
+  return moment(value).format('YYYY-MM-DD h:mm A')
 })
 
 Vue.filter('fromDays', (value, postfix = '') => {

@@ -47,15 +47,15 @@ app.use(cors())
 
 if (process.env.NODE_ENV == 'production') {
   let integrations = []
-  if (process.env.NO_TRACE === undefined) {
-    const Tracing = require("@sentry/tracing")
-    integrations = [
-      // enable HTTP calls tracing
-      new Sentry.Integrations.Http({ tracing: true }),
-      // enable Express.js middleware tracing
-      new Tracing.Integrations.Express({ app }),
-    ]
-  }
+  // if (process.env.NO_TRACE === undefined) {
+  //   const Tracing = require("@sentry/tracing")
+  //   integrations = [
+  //     // enable HTTP calls tracing
+  //     new Sentry.Integrations.Http({ tracing: true }),
+  //     // enable Express.js middleware tracing
+  //     new Tracing.Integrations.Express({ app }),
+  //   ]
+  // }
   Sentry.init({
     dsn: "https://059e1abaeff240b79c218a15f6f431d3@o1100664.ingest.sentry.io/6246113",
     integrations,
@@ -68,9 +68,9 @@ if (process.env.NODE_ENV == 'production') {
   
   // RequestHandler creates a separate execution context using domains, so that every
   // transaction/span/breadcrumb is attached to its own Hub instance
-  app.use(Sentry.Handlers.requestHandler());
+  // app.use(Sentry.Handlers.requestHandler());
   // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.Handlers.tracingHandler());
+  // app.use(Sentry.Handlers.tracingHandler());
 }
 
 app.use('/', routes);

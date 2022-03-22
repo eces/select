@@ -73,7 +73,7 @@ div
                 span.mdi.mdi-check.text-success.me-1
                 small.text-success.me-2 완료 {{block.datetime}}
                 small.text-muted  ({{block.delay/1000}}초 소요)
-              div.alert.alert-light.mt-1(v-if='block.update_result && block.update_result.info') 
+              //- div.alert.alert-light.mt-1(v-if='block.update_result && block.update_result.info') 
                 strong {{block.update_result.info}}
               //- div.alert.alert-light.mt-1(v-else-if='block.update_result && block.update_result.affectedRows') 
                 strong.me-3 affectedRows: {{block.update_result.affectedRows}}
@@ -114,26 +114,26 @@ div
             div.alert.alert-light.mt-1(v-if='block.update_result') 
               pre {{block.update_result}}
               small.text-muted  ({{block.delay/1000}}초 소요)
+        template(v-else)
+          form.p-2.mb-2(@submit.prevent='get_http_result(block, i)' v-if='block.params && block.params.length > 0 ')
+            div.alert.alert-light.border(v-if='$store.state.admin.active') 
+              code: pre.mb-0 {{block}}
+            param-block(:params='block.params')
+            //- .d-flex(v-if='block.params.length > 0 ')
+              div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
+                label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
               
-        form.p-2.mb-2(v-else @submit.prevent='get_http_result(block, i)' v-if='block.params && block.params.length > 0 ')
-          div.alert.alert-light.border(v-if='$store.state.admin.active') 
-            code: pre.mb-0 {{block}}
-          param-block(:params='block.params')
-          //- .d-flex(v-if='block.params.length > 0 ')
-            div.mb-3(v-for='param in block.params' v-if='param.key && !param.valueFromRow && String(param.valueFromEnv || "") != "true" ')
-              label.d-block.pb-1: strong.text-muted: small {{param.label || param.key || '&nbsp;'}}
-            
-              template(v-if='param.datalist')
-                input.form-control.d-inline.me-1(:list='`${i}${param.label}`' v-model='param.value' required)
-                datalist(:id='`${i}${param.label}`')
-                  option(:value='label' v-for='label in param.datalist') {{label}}
-              template(v-else-if='param.dropdown')
-                select.form-control.d-inline.me-1(v-model='param.value' required)
-                  option(:value='label' v-for='label in param.dropdown') {{label}}
-              template(v-else)
-                  input.form-control(:type='param.format' v-model='param.value')
-            
-          button.btn.btn-light.border(type='submit' v-show='block.showSubmitButton !== false && (!block.autoload || block.params)') {{block.label || '조회'}}
+                template(v-if='param.datalist')
+                  input.form-control.d-inline.me-1(:list='`${i}${param.label}`' v-model='param.value' required)
+                  datalist(:id='`${i}${param.label}`')
+                    option(:value='label' v-for='label in param.datalist') {{label}}
+                template(v-else-if='param.dropdown')
+                  select.form-control.d-inline.me-1(v-model='param.value' required)
+                    option(:value='label' v-for='label in param.dropdown') {{label}}
+                template(v-else)
+                    input.form-control(:type='param.format' v-model='param.value')
+              
+            button.btn.btn-light.border(type='submit' v-show='block.showSubmitButton !== false && (!block.autoload || block.params)') {{block.label || '조회'}}
       div(v-else-if='block.type == "markdown"')
         strong.text-muted: small {{block.name}}
         div.markdown-body.mb-3(v-html='$options.filters.marked(block.content)')
@@ -194,14 +194,23 @@ div
           strong.text-muted.me-2: small {{result.block.name}}
           span: small.text-muted  {{result.rows.length}}건 ({{result.delay/1000}}초 소요)
           small.text-muted.ms-4.visible-hover 
-            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "query"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
+            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill.px-2(style='position: relative; top: -3px;' v-if='result.block.type == "query"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
               span.mdi.mdi-file-table-outline.text-success
               small.text-muted  구글 시트에서 열기
-              h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
+              span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
             a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "http"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
               span.mdi.mdi-file-table-outline.text-success
-              h5(style='width: 100px' v-show='gsheet_loading[result.block_idx]'): span.mdi.mdi-loading.mdi-spin.text-success
+              small.text-muted  구글 시트에서 열기
+              span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
         div(v-if='result.cols')
+          template(v-if='result.block.contextMenu')
+            vue-simple-context-menu(
+              :elementId="`__contextMenu.${result.block_idx}`"
+              :options="result.block.contextMenu"
+              :ref="`contextMenu.${result.block_idx}`"
+              @option-clicked='optionClicked'
+            )
+          
           .table-responsive-lg(:class='result.block.containerClass || "done"')
             vue-good-table(
               @on-selected-rows-change="selectionChanged"
@@ -215,28 +224,38 @@ div
               @on-search='onSearch'
             )
               template(slot='table-row' slot-scope='props')
-                span(v-if='props.column.field == "__조회__"')
-                  a(v-if='result.block.viewModal && !result.block.viewModal.useColumn' href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') 조회
-                span(v-else-if='props.column.field == "__수정__"')
-                  a(href='#' @click.prevent.stop='edit_modal(props.formattedRow, result.block_idx, props.row)') 수정
-                span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column && blocks[result.block_idx].refs_by_column[props.column.field]'
-                  :set='ref = blocks[result.block_idx].refs_by_column[props.column.field]'
+                span(@contextmenu='open_context($event, result.block_idx, props.row)')
+                  span(v-if='props.column.field == "__조회__"')
+                    a(v-if='result.block.viewModal && !result.block.viewModal.useColumn' href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') 조회
+                  span(v-else-if='props.column.field == "__수정__"')
+                    a(href='#' @click.prevent.stop='edit_modal(props.formattedRow, result.block_idx, props.row)') 수정
+                  span(v-else-if='blocks[result.block_idx].refs && blocks[result.block_idx].refs_by_column && blocks[result.block_idx].refs_by_column[props.column.field]'
+                    :set='ref = blocks[result.block_idx].refs_by_column[props.column.field]'
+                  )
+                    template(v-if='ref')
+                      template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
+                        template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
+                          router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
+                      template(v-else)
+                        a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
+                  span(v-else) 
+                    template(v-if='_isArray(props.row[props.column.field])')
+                      span.me-2(v-for='value in props.row[props.column.field]') {{value}}
+                    template(v-else-if='result.block.viewModal && result.block.viewModal.useColumn == props.column.field') 
+                      template(v-if='props.formattedRow[props.column.field]')
+                        a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
+                      template(v-else)
+                        span.d-block.w-100 (비어있음)
+                    template(v-else-if='props.column.format == "json"') 
+                      pre.mb-0(style='word-break: break-word; white-space: pre-wrap; max-height: 8rem' @click='open_json(props.column, props.formattedRow[props.column.field])') {{props.formattedRow[props.column.field]}}
+                    template(v-else) {{props.formattedRow[props.column.field]}}
+              template(slot="pagination-bottom" slot-scope="props")
+                table-pagination(
+                  :paginationOptions='result.block.paginationOptions'
+                  :total="props.total"
+                  :pageChanged="props.pageChanged"
+                  :perPageChanged="props.perPageChanged"
                 )
-                  template(v-if='ref')
-                    template(v-if='_isArray(props.row[ref.valueFromColumn || props.column.field])')
-                      template(v-for='value in props.row[ref.valueFromColumn || props.column.field]')
-                        router-link.me-2(:to='`/admin/${admin_domain}/${ref.href}#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`' :target='ref.target || "_blank"' @click.stop) {{value}}
-                    template(v-else)
-                      a(:href='`${replace_url(`/admin/${admin_domain}/`, ref.href, props.row[ref.valueFromColumn || props.column.field], ref)}`' :target='ref.target || "_blank"' @click.stop) {{props.formattedRow[props.column.field]}}
-                span(v-else) 
-                  template(v-if='_isArray(props.row[props.column.field])')
-                    span.me-2(v-for='value in props.row[props.column.field]') {{value}}
-                  template(v-else-if='result.block.viewModal && result.block.viewModal.useColumn == props.column.field') 
-                    template(v-if='props.formattedRow[props.column.field]')
-                      a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
-                    template(v-else)
-                      span.d-block.w-100 (비어있음)
-                  template(v-else) {{props.formattedRow[props.column.field]}}
 </template>
 
 <script>
@@ -247,6 +266,7 @@ const parser = new Parser
 import { uniqBy, keyBy, sortBy, groupBy, isObject, cloneDeep, compact, uniq, isArray } from 'lodash'
 // import Tiptap from '@/components/Tiptap.vue'
 import AdminModal from '@/views/AdminModal.vue'
+import TextViewer from '@/components/TextViewer.vue'
 
 import { VueGoodTable } from 'vue-good-table';
 
@@ -259,8 +279,10 @@ export default {
     // Tiptap,
     VueGoodTable,
     AdminModal,
-    TableBlockSelf: () => import('@/components/TableBlock.vue'),
+    TextViewer,
+    // TableBlockSelf: () => import('@/components/TableBlock.vue'),
     ParamBlock: () => import('@/components/ParamBlock.vue'),
+    TablePagination: () => import('@/components/TablePagination.vue'),
   },
   computed: {
     
@@ -282,6 +304,8 @@ export default {
 
       query_warning: '',
       query_warning_timeout: null,
+
+      current_context_block_idx: null,
     }
   },
   watch: {
@@ -403,6 +427,50 @@ export default {
     })
   },
   methods: {
+    open_context(event, block_idx, row) {
+      // console.log(event, block_idx, row)
+      if (this.$refs[`contextMenu.${block_idx}`]) {
+        if (event.srcElement?.nodeName == 'A') return
+
+        this.current_context_block_idx = block_idx
+        this.$refs[`contextMenu.${block_idx}`][0]?.showMenu(event, row)
+        event.preventDefault()
+        event.stopPropagation()
+      } 
+    },
+    optionClicked(event) {
+      // console.log('optionClicked', event)
+      let action_idx = 0
+      let action 
+      
+      for (const e of this.blocks[this.current_context_block_idx].actions) {
+        if (e.label == event.option.action) {
+          action = e
+          break
+        }
+        action_idx++
+      }
+
+      if (!action) return
+      this.action_button(action, action_idx, this.current_context_block_idx)
+    },
+    open_json(column, value) {
+      console.log(column.field, column.label, value)
+      const v = isObject(value) ? JSON.stringify(value, null, '  ') : value
+      this.$modal.show(
+        TextViewer,
+        {
+          column, value: v,
+        },
+        {
+          scrollable: true,
+          height: 'auto',
+          transition: 'none',
+          name: 'modal2',
+          width: '90%',
+        }
+      )
+    },
     // replace_url(prefix, href, value, ref) {
     replace_url(prefix, href, value, ref) {
       if (href.includes(`{{${ref.param}}}`)) {
@@ -611,6 +679,7 @@ export default {
     },
     _get_http_result_all() {
       for (const i in this.page.blocks) {
+        // if (String(this.page.blocks[i]?.axios?.method).toUpperCase() != 'GET') continue
         this._get_http_result(this.page.blocks[i], i)
       }
     },
@@ -709,10 +778,10 @@ export default {
             return e
           })
           if (block.sqlType == "update") {
-            alert('수정했습니다.')
+            alert('수정했습니다. \n\n' + (block.update_result?.info || ''))
           }
           else if (block.sqlType == "insert") {
-            alert('저장했습니다.')
+            alert('저장했습니다. \n\n' + (block.update_result?.info || ''))
           }
         }
         // this.blocks = [...this.blocks]
@@ -932,17 +1001,59 @@ export default {
         this.results[block.name].block = block
         if (r.data.rows.length > 0) {
           if (block.columnOptions) {
-            this.results[block.name].cols = block.columnOptions.map(e => {
-              if (e.tdClass && e.tdClass.length && e.tdClass.includes('return')) {
-                e.tdClass = new Function('row', e.tdClass)
+            if (block.columnOptionsAppend) {
+              const fields = {}
+              for(let i=0; i<r.data.rows.length; i++) {
+                if (i >= 30) break
+                Object.keys(r.data.rows[i]).map(k => {
+                  fields[k] = {
+                    field: k,
+                    label: k,
+                  }
+                })
               }
-              if (e.formatFn) {
-                if (this.$options.filters[e.formatFn]) {
-                  e.formatFn = this.$options.filters[e.formatFn]
+              block.columnOptions.map(e => {
+                if (isObject(e)) {
+                  if (e.tdClass && e.tdClass.length && e.tdClass.includes('return')) {
+                    e.tdClass = new Function('row', e.tdClass)
+                  }
+                  if (e.formatFn) {
+                    if (this.$options.filters[e.formatFn]) {
+                      e.formatFn = this.$options.filters[e.formatFn]
+                    }
+                  }
+                  e.label = e.label || e.field
+                  fields[e.field] = e
+                } else {
+                  fields[e.field] = {
+                    field: e, 
+                    label: e,
+                  }
                 }
-              }
-              return e
-            })
+              })
+
+              this.results[block.name].cols = Object.values(fields)
+            } else {
+              this.results[block.name].cols = block.columnOptions.map(e => {
+                if (isObject(e)) {
+                  if (e.tdClass && e.tdClass.length && e.tdClass.includes('return')) {
+                    e.tdClass = new Function('row', e.tdClass)
+                  }
+                  if (e.formatFn) {
+                    if (this.$options.filters[e.formatFn]) {
+                      e.formatFn = this.$options.filters[e.formatFn]
+                    }
+                  }
+                  e.label = e.label || e.field
+                  return e
+                } else {
+                  return {
+                    field: e, 
+                    label: e,
+                  }
+                }
+              })
+            }
           } else {
             const fields = {}
             for(let i=0; i<r.data.rows.length; i++) {
@@ -1029,12 +1140,13 @@ export default {
       } catch (error) {
         console.log(error)
         alert(error.message)
+      } finally {
+        if (block && this.results[block.name]) {
+          this.results[block.name].loading = false
+        }
+        clearTimeout(slow_timeout)
+        block.fetching = false
       }
-      if (block && this.results[block.name]) {
-        this.results[block.name].loading = false
-      }
-      clearTimeout(slow_timeout)
-      block.fetching = false
     },
 
     async get_http_result(block, i) {
@@ -1069,6 +1181,10 @@ export default {
         if (block.type != 'http') {
           return console.log('non http block request canceled.')
         }
+        if (String(block?.axios?.method).toUpperCase() != 'GET') {
+          return console.log('non GET http block request canceled.')
+        }
+
         this.http_loading[i] = true
         this.http_loading = [...this.http_loading]
 
@@ -1195,6 +1311,9 @@ export default {
       if (block.type != 'http') {
         return console.log('non http block request; canceled.')
       }
+      // if (!confirm('실행하시겠습니까?\n\n'+fields.map( e => `${e.label || e.key}: ${e.value}` ).join('\n'))) return false
+      if (!confirm('실행하시겠습니까?')) return false
+
       try {
         for (const param of block.params) {
           if (param.valueFromRow) {
