@@ -15,7 +15,7 @@ div
   .container.my-4(style='max-width: 480px')
     .bg-white.shadow-sm.p-4.rounded
 
-      h5.text-muted.text-center.mb-3 셀렉트 어드민 로그인
+      h5.text-secondary.text-center.mt-1.mb-1(style='letter-spacing: -0.5px; font-weight: 600') 셀렉트 어드민 로그인
 
 
 
