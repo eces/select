@@ -351,7 +351,6 @@ router.post('/http', [only.id()], async (req, res, next) => {
           v = JSON.stringify(String(param.value)).slice(1, -1)
         }
         json = String(json).replace(new RegExp(`\{\{${param.key}\}\}`, 'g'), v)
-        debug('>>>>>>', json)
         config = JSON.parse(json)
       }
     } else if (_.isString(block.axios)) {
