@@ -160,6 +160,7 @@ const store = {
 
             // refreshed token
             window.localStorage.SELECT2_TOKEN = token
+            $http.defaults.headers.common['Authorization'] = `Bearer ${window.localStorage.SELECT2_TOKEN}`
 
             session.checked = true
             session.loaded = true
