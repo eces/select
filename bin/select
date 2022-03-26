@@ -40,8 +40,17 @@ if (commands[0] == 'create') {
   (async () => {
     try {
       const { getInstalledPath } = require('get-installed-path')
-      const prefix_module_path = await getInstalledPath('selectfromuser')
+      let prefix_module_path = await getInstalledPath('selectfromuser')
+      
       const path = require('path')
+      const fs = require('fs')
+      const cwd_package_path = path.join(process.cwd(), 'package.json')
+      if (fs.existsSync(cwd_package_path)) {
+        const cwd_package_json = require(cwd_package_path)
+        if (cwd_package_json.dependencies && cwd_package_json.dependencies.selectfromuser) {
+          prefix_module_path = path.join(process.cwd(), 'node_modules/selectfromuser')
+        }
+      }
       console.log('Using path: ', prefix_module_path)
       
       const nodemon = require('nodemon')
