@@ -6,19 +6,22 @@ let pub = null
 
 module.exports.init = async () => {
   try {
+    const port = process.env.REDIS_MASTER_PORT || global.config.get('redis.master.port')
+    const host = process.env.REDIS_MASTER_HOST || global.config.get('redis.master.host')
+    const db = process.env.REDIS_MASTER_DB || global.config.get('redis.master.db')
     sub = redis.createClient({
-      port: global.config.get('redis.master.port'),
-      host: global.config.get('redis.master.host'),
-      db: global.config.get('redis.master.db'),
+      port,
+      host,
+      db,
       keyPrefix: process.env.NODE_ENV + ':',
     })
     sub.on('error', e => {
       error(e)
     })
     pub = redis.createClient({
-      port: global.config.get('redis.master.port'),
-      host: global.config.get('redis.master.host'),
-      db: global.config.get('redis.master.db'),
+      port,
+      host,
+      db,
       keyPrefix: process.env.NODE_ENV + ':',
     })
     pub.on('error', e => {

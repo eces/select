@@ -38,6 +38,7 @@
     "moment": "^2.29.1",
     "morgan": "^1.9.1",
     "mysql2": "^2.3.0",
+    "nodemon": "^2.0.15",
     "package-json": "^7.0.0",
     "pg": "^8.7.3",
     "serve-favicon": "^2.5.0",
@@ -47,8 +48,7 @@
     "winston": "^3.4.0"
   },
   "devDependencies": {
-    "ava": "^1.2.0",
-    "nodemon": "^1.18.9"
+    "ava": "^1.2.0"
   },
   "repository": {
     "type": "git",
