@@ -55,6 +55,7 @@ Vue.component("vue-simple-context-menu", VueSimpleContextMenu);
 
 import { format as formatSQL } from 'sql-formatter'
 import {marked} from 'marked'
+import sanitizeHtml from 'sanitize-html';
 
 Vue.filter('datetime', value => {
   if (!value) return ''
@@ -110,6 +111,11 @@ Vue.filter('sql', value => {
 Vue.filter('number', value => {
   if (!value) return ''
   return numeral(value).format('0,0')
+})
+
+Vue.filter('sanitizeHtml', value => {
+  if (!value) return ''
+  return sanitizeHtml(value)
 })
 
 new Vue({
