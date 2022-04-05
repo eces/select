@@ -10,6 +10,7 @@ const store = {
   state: {
     session: {},
     config: {},
+    config_resources_kv: {},
     admin: {},
     teams: [],
     teams_by_id: {},
@@ -28,6 +29,10 @@ const store = {
     config(state, config) {
       console.log('config loaded')
       state.config = config
+    },
+    config_resources_kv(state, config_resources_kv) {
+      console.log('config_resources_kv loaded')
+      state.config_resources_kv = config_resources_kv
     },
     admin(state, admin) {
       console.log('admin loaded')
@@ -83,7 +88,9 @@ const store = {
           const r = await $http.get(`/api/config/json`)
           if (r?.data?.message != 'ok') throw new Error(r?.data?.message || 'config 가져오기 실패')
 
-          context.commit('config', r.data['select-configuration'])
+          const config = r.data['select-configuration']
+          context.commit('config', config)
+          context.commit('config_resources_kv', keyBy(config.resources || [], 'name'))
           return resolve(true)
         } catch (error) {
           console.log('config @error', error)
@@ -96,7 +103,10 @@ const store = {
         
       })
       if (r?.data?.message != 'ok') throw new Error(r?.data?.message || 'config admin_domain 실패')
-      context.commit('config', r.data['select-configuration'])
+      const config = r.data['select-configuration']
+      
+      context.commit('config', config)
+      context.commit('config_resources_kv', keyBy(config.resources || [], 'name'))
     },
     async config_edit(context, {team_id}) {
       const r = await $http.get(`/api/team/${team_id}/config`, {
