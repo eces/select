@@ -13,6 +13,7 @@
     "@sentry/vue": "^6.18.1",
     "axios": "^0.24.0",
     "bootstrap": "^5.1.2",
+    "chart.js": "^3.7.1",
     "core-js": "^3.6.5",
     "gfm.css": "^1.1.2",
     "marked": "^4.0.4",
