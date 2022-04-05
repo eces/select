@@ -365,6 +365,10 @@ router.post('/http', [only.id()], async (req, res, next) => {
       if (!r.data) throw StatusError('no data')
       if (block.rowsPath) {
         rows = _.get(r.data, block.rowsPath)
+      } else if (_.isArray(r.data)) {
+        rows = r.data
+      } else if (_.isObject(r.data)) {
+        rows = [r.data]
       } else {
         rows = r.data
       }
