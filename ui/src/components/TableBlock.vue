@@ -354,8 +354,11 @@ div
                       a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
                     template(v-else-if='props.column.format == "json"') 
                       pre.mb-0(style='word-break: break-word; white-space: pre-wrap; max-height: 8rem' @click='open_json(props.column, props.formattedRow[props.column.field])') {{props.formattedRow[props.column.field]}}
+                    template(v-else-if='props.column.format == "textarea"') 
+                      div(style='max-height: 8rem; overflow: scroll;')
+                        div(style='word-break: break-word; white-space: pre-wrap;') {{props.formattedRow[props.column.field]}}
                     template(v-else-if='props.column.format == "html"')
-                      div.shadow-sm.p-1(style='max-height: 8rem; overflow: scroll;')
+                      div(style='max-height: 8rem; overflow: scroll;')
                         div(v-html='$options.filters.sanitizeHtml(props.formattedRow[props.column.field])')
                     template(v-else) {{props.formattedRow[props.column.field]}}
               template(slot="pagination-bottom" slot-scope="props")
