@@ -19,6 +19,37 @@
 
 .mw-500
   max-width: 500px
+.tab-content-type-tab, .tab-content-type-tabs
+  border-top: solid 1px #dee2e6 !important
+  padding: 0.5rem !important
+
+.nav-pills
+  .nav-link
+    font-size: 13px
+    font-weight: bold
+    border: solid 1px rgba(0,0,0,0)
+    &:hover
+      background-color: rgba(#0D6EFD, 0.1)
+    &.active
+      border: solid 1px rgba(0,0,0,0.1)
+      &:hover
+        background-color: rgba(#0D6EFD, 0.9)
+.nav-tabs
+  // padding-left: 1rem
+  .nav-link
+    position: relative
+    bottom: -1px
+    font-size: 13px
+    font-weight: bold
+    border: 0
+    border-bottom: solid 1px #dee2e6
+    color: #555
+    &:hover
+      color: #0D6EFD
+  .nav-link.active
+    border-bottom: solid 2px #0D6EFD
+    color: #0D6EFD
+
 </style>
 <template lang="pug">
 div
@@ -84,7 +115,7 @@ div
           //- div.alert.alert-light.border(v-if='show_log || $store.state.admin.active') 
           //-   code: pre.mb-0.bg-light.p-1.text-wrap {{block.sql | sql}}
           form.p-2.mb-2(
-            v-if='block.params && block.params.length > 0 '
+            v-if='(block.params && block.params.length > 0) && (String(block.showButtonWithResult) != "true")'
             @submit.prevent='get_query_result(block, i)'
           )
             //- v-if='block.params.length > 0 || String(block.autoload) != "true" '
@@ -95,7 +126,7 @@ div
                 input.form-control(:type='param.format' v-model='param.value')
             button.btn.btn-light.border(type='submit' v-if='String(block.autoload) !== "true"') {{ block.label || '조회' }}
       div(v-else-if='block.type == "http"')
-        template(v-if='block.axios && block.axios.method && ["POST", "PUT"].includes(block.axios.method.toUpperCase())')
+        template(v-if='block.axios && ["POST", "PUT"].includes((block.axios.methodType || block.axios.method).toUpperCase())')
           .p-2.bg-light(v-if='block.name' style='margin-top: -1px'): strong.text-muted: small {{block.name}}
           div.alert.alert-light.border(v-if='$store.state.admin.active') 
             code: pre.mb-0 {{block}}
@@ -174,8 +205,86 @@ div
                 pre: code {{ item}}
               template(v-else)
                 span {{item}}
+      template(v-else-if='result.block.display == "card"')
+        .d-flex.flex-wrap(:class='result.block.class')
+          div.pe-2.pb-1(v-for='(item, k) in result.rows[0]' 
+            v-if='(result.cols_by_field[k] && result.cols_by_field[k].hidden) !== true'
+            style='min-width: 120px;'
+            :set='col = result.cols_by_field[k] || {}'
+          )
+            small.text-muted.d-block(style='font-size: 11px') {{ col.label || k }}
+            span.text-break
+              template(v-if='result.block.viewModal && result.block.viewModal.useColumn && result.block.viewModal.useColumn == k')
+                a(href='#' @click.prevent.stop='open_modal(result.rows[0], result.block_idx, result.rows[0])') {{item}}
+              template(v-else-if='item && _isObject(item)')
+                pre: code {{item}}
+              template(v-else)
+                template(v-if='col.format == "json"')
+                  pre.border.p-1.shadow-sm {{item}}
+                template(v-else-if='col.format == "html"')
+                  div.border.p-1.shadow-sm(v-html='$options.filters.sanitizeHtml(item)')
+                template(v-else)
+                  span(style='word-break: break-word; white-space: pre-wrap;') {{item}}&nbsp;
+      template(v-else-if='result.block.display == "col-1"')
+        div.pt-3(:class='result.block.class')
+          div.px-3.pb-3(v-for='(item, k) in result.rows[0]' 
+            v-if='(result.cols_by_field[k] && result.cols_by_field[k].hidden) !== true'
+            :set='col = result.cols_by_field[k] || {}'
+          )
+            small: strong.d-block {{ col.label || k }}
+            span.text-break
+              template(v-if='result.block.viewModal && result.block.viewModal.useColumn && result.block.viewModal.useColumn == k')
+                a(href='#' @click.prevent.stop='open_modal(result.rows[0], result.block_idx, result.rows[0])') {{item}}
+              template(v-else-if='item && _isObject(item)')
+                pre: code {{item}}
+              template(v-else)
+                template(v-if='col.format == "json"')
+                  pre.border.p-1.shadow-sm {{item}}
+                template(v-else-if='col.format == "html"')
+                  div.border.p-1.shadow-sm(v-html='$options.filters.sanitizeHtml(item)')
+                template(v-else)
+                  span(style='word-break: break-word; white-space: pre-wrap;') {{item}}&nbsp;
           
-      
+              
+          
+      template(v-else-if='result.block.chartOptions && String(result.block.chartOptions.type)')
+        //- h1 Hi chart {{result.block.chartOptions.type}}
+        template(v-if='result.block.chartOptions.loaded !== true')
+          h5(style='width: 100px')
+            span.mdi.mdi-loading.mdi-spin.text-primary
+        template(v-else)
+          .mt-2
+          .d-flex(
+            style='min-height: 30px' v-if='result.block' :class='result.block.containerClass'
+          )
+            strong.text-muted.me-2: small {{result.block.name}}
+            span: small.text-muted  {{result.rows.length}}건 ({{result.delay/1000}}초 소요)
+            small.text-muted.ms-4.visible-hover.ms-auto 
+              a.text-reset.text-decoration-none.border.btn.btn-sm.btn-light.rounded-pill.px-2(style='position: relative; top: -3px;' v-if='result.block.type == "query"' title='구글스프레드 시트를 통해 값을 확인하고 csv, xls등으로 변환/다운 가능합니다.' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
+                span.mdi.mdi-file-table-outline.text-success
+                small.text-muted  다운로드
+                span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
+              a.text-reset.text-decoration-none.border.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "http"' title='구글스프레드 시트를 통해 값을 확인하고 csv, xls등으로 변환/다운 가능합니다.' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
+                span.mdi.mdi-file-table-outline.text-success
+                small.text-muted  다운로드
+                span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
+            
+          form.px-2(
+            v-if='String(result.block.showButtonWithResult) == "true" && result.block.sqlType == "select" '
+            @submit.prevent='get_query_result(result.block, result.block_idx)'
+          )  
+            param-block(:params='result.block.params')
+            button.btn.btn-light.border(type='submit') {{ result.block.label || '조회' }}
+
+          //- h5 {{result.block.chartOptions.type}}
+          //- pre {{result.block.chartOptions}}
+          chart(
+            :height='result.block.chartOptions.height' 
+            :width='result.block.chartOptions.width' 
+            :type='result.block.chartOptions.type' 
+            :data='result.block.chartOptions.data' 
+            :options='result.block.chartOptions.options')
+          .mb-4
       template(v-else)
         div.d-flex.flex-wrap(v-if='result.cols')
           template(v-if='result.block.actions')
@@ -193,14 +302,14 @@ div
         )
           strong.text-muted.me-2: small {{result.block.name}}
           span: small.text-muted  {{result.rows.length}}건 ({{result.delay/1000}}초 소요)
-          small.text-muted.ms-4.visible-hover 
-            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill.px-2(style='position: relative; top: -3px;' v-if='result.block.type == "query"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
+          small.text-muted.ms-4.visible-hover.ms-auto 
+            a.text-reset.text-decoration-none.border.btn.btn-sm.btn-light.rounded-pill.px-2(style='position: relative; top: -3px;' v-if='result.block.type == "query"' title='구글스프레드 시트를 통해 값을 확인하고 csv, xls등으로 변환/다운 가능합니다.' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_query_result(result.block, result.block_idx, "gsheet")') 
               span.mdi.mdi-file-table-outline.text-success
-              small.text-muted  구글 시트에서 열기
+              small.text-muted  다운로드
               span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
-            a.text-reset.text-decoration-none.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "http"' title='구글시트 열기' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
+            a.text-reset.text-decoration-none.border.btn.btn-sm.btn-light.rounded-pill(style='position: relative; top: -3px' v-if='result.block.type == "http"' title='구글스프레드 시트를 통해 값을 확인하고 csv, xls등으로 변환/다운 가능합니다.' href='#' @click.prevent='!gsheet_loading[result.block_idx] && _get_http_result(result.block, result.block_idx, "gsheet")') 
               span.mdi.mdi-file-table-outline.text-success
-              small.text-muted  구글 시트에서 열기
+              small.text-muted  다운로드
               span.mdi.mdi-loading.mdi-spin.text-success.ms-2(style='font-size: 24px; position: relative; line-height: 5px; top: 3px' v-show='gsheet_loading[result.block_idx]')
         div(v-if='result.cols')
           template(v-if='result.block.contextMenu')
@@ -242,12 +351,12 @@ div
                     template(v-if='_isArray(props.row[props.column.field])')
                       span.me-2(v-for='value in props.row[props.column.field]') {{value}}
                     template(v-else-if='result.block.viewModal && result.block.viewModal.useColumn == props.column.field') 
-                      template(v-if='props.formattedRow[props.column.field]')
-                        a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
-                      template(v-else)
-                        span.d-block.w-100 (비어있음)
+                      a.d-block.w-100(href='#' @click.prevent.stop='open_modal(props.formattedRow, result.block_idx, props.row)') {{props.formattedRow[props.column.field] || '(비어있음)'}}
                     template(v-else-if='props.column.format == "json"') 
                       pre.mb-0(style='word-break: break-word; white-space: pre-wrap; max-height: 8rem' @click='open_json(props.column, props.formattedRow[props.column.field])') {{props.formattedRow[props.column.field]}}
+                    template(v-else-if='props.column.format == "html"')
+                      div.shadow-sm.p-1(style='max-height: 8rem; overflow: scroll;')
+                        div(v-html='$options.filters.sanitizeHtml(props.formattedRow[props.column.field])')
                     template(v-else) {{props.formattedRow[props.column.field]}}
               template(slot="pagination-bottom" slot-scope="props")
                 table-pagination(
@@ -256,6 +365,37 @@ div
                   :pageChanged="props.pageChanged"
                   :perPageChanged="props.perPageChanged"
                 )
+      template(v-if='result.block.tabOptions')
+        div.mt-2(:class='result.block.tabOptions.containerClass' )
+          template(v-if='result.block.tabOptions.type == "button" ')
+            .btn-group.shadow-sm
+              button.btn.btn-light.border(v-for='(tab, i) in result.block.tabOptions.tabs'
+                @click='open_tabOptions(result.block.tabOptions, i)'
+                :class='{"active text-primary": (result.block.tabOptions.current_idx == i)}'
+              ) {{tab.name}}
+          template(v-else-if='result.block.tabOptions.type == "label" ')
+            ul.nav.nav-pills(:class='`${result.block.tabOptions.tabClass}`')
+              li.nav-item.pe-1(v-for='(tab, i) in result.block.tabOptions.tabs')
+                a.nav-link.rounded-pill(href='#' @click='open_tabOptions(result.block.tabOptions, i)'
+                  :class='{"active shadow-sm": (result.block.tabOptions.current_idx == i)}'
+                ) {{tab.name}}
+          template(v-else)
+            ul.nav.nav-tabs(:class='`${result.block.tabOptions.tabClass}`')
+              li.nav-item(v-for='(tab, i) in result.block.tabOptions.tabs')
+                a.nav-link(href='#' @click='open_tabOptions(result.block.tabOptions, i)'
+                  :class='{active: (result.block.tabOptions.current_idx == i)}'
+                ) {{tab.name}}
+          div(
+            v-for='(tab, i) in result.block.tabOptions.tabs' v-if='i == result.block.tabOptions.current_idx' 
+            :class='`p-2 ${result.block.tabOptions.contentClass} tab-content-type-${result.block.tabOptions.type || "tabs"}`'
+            :style='{minHeight: `${result.block.tabOptions.height}px`}'
+          )
+            table-block-self(:blocks='result.block.tabOptions.tabs[i].blocks' :page='result.block.tabOptions.tabs[i]' 
+              :depth='2' 
+              :path='`${path}.blocks.${result.block_idx}.tabOptions.tabs.${i}`'
+              :admin_domain='admin_domain'
+              :state_params='get_state_params()'
+            )
 </template>
 
 <script>
@@ -263,10 +403,11 @@ div
 import { Parser } from 'node-sql-parser'
 const parser = new Parser
 
-import { uniqBy, keyBy, sortBy, groupBy, isObject, cloneDeep, compact, uniq, isArray } from 'lodash'
+import { uniqBy, keyBy, sortBy, groupBy, isObject, cloneDeep, compact, uniq, isArray, flatten } from 'lodash'
 // import Tiptap from '@/components/Tiptap.vue'
 import AdminModal from '@/views/AdminModal.vue'
 import TextViewer from '@/components/TextViewer.vue'
+import Chart from '@/components/Chart.vue'
 
 import { VueGoodTable } from 'vue-good-table';
 
@@ -274,18 +415,19 @@ import moment from 'moment'
 
 export default {
   name: 'TableBlock',
-  props: ['row', 'blocks', 'page', 'depth', 'path', 'admin_domain', 'team_id', 'teamrow_id', 'show_log', 'selectedRows', 'row_json'],
+  props: ['row', 'blocks', 'page', 'depth', 'path', 'admin_domain', 'team_id', 'teamrow_id', 'show_log', 'selectedRows', 'row_json', 'state_params'],
   components: {
     // Tiptap,
     VueGoodTable,
     AdminModal,
     TextViewer,
-    // TableBlockSelf: () => import('@/components/TableBlock.vue'),
+    Chart,
+    TableBlockSelf: () => import('@/components/TableBlock.vue'),
     ParamBlock: () => import('@/components/ParamBlock.vue'),
     TablePagination: () => import('@/components/TablePagination.vue'),
   },
   computed: {
-    
+
   },
   data() {
     return {
@@ -343,8 +485,27 @@ export default {
           // }
         } else {
           try {
-            const ast = parser.astify(block.sql, 'MySQL')
-            // block.ast = ast
+            const resource_type = this.$store.state.config_resources_kv[block.resource]
+
+            const sql = block.sql
+              .replace(/::([A-Za-z]+)/g, ``)
+              .replace(/:(\.\.\.)?([A-Za-z0-9_.]+)/g, `''`)
+              .replace(/\{\{(\s)?query(\s)?\}\}/g, `1=1`)
+              .replace(/\{\{(\s)?orderBy(\s)?\}\}/g, ``)
+
+            const ast = parser.astify(sql, {
+              database: {
+                'mysql': 'mysql',
+                'postgres': 'postgresql',
+                // 'bigquery': 'bigquery',
+                // 'db2': 'db2',
+                // 'hive': 'hive',
+                // 'mariadb': 'mariadb',
+                // 'sqlite': 'sqlite',
+                // 'transactsql': 'transactsql',
+                // 'flinksql': 'flinksql',
+              }[resource_type]
+            })
             block.sqlType = String(ast.type).toLowerCase()
           } catch (error) {
             alert('SQL 해석 실패')
@@ -378,7 +539,13 @@ export default {
           // console.log('>>>>>>>>>>>>defaultValueFromRow', this.row)
           if (e.datalist && e.datalistLength) {
             // why?
-            e.values = [...this.row_json[key]]
+            if (this.row_json[key]) {
+              e.values = [...this.row_json[key]]
+              // if (isArray(this.row_json[key])) {
+              // } else {
+              //   e.values = [this.row_json[key]]
+              // }
+            }
             this.$set(e, 'values', e.values)
             e.value = ''
           } 
@@ -427,6 +594,9 @@ export default {
     })
   },
   methods: {
+    open_tabOptions(tabOptions, idx) {
+      this.$set(tabOptions, 'current_idx', idx)
+    },
     open_context(event, block_idx, row) {
       // console.log(event, block_idx, row)
       if (this.$refs[`contextMenu.${block_idx}`]) {
@@ -476,7 +646,13 @@ export default {
       if (href.includes(`{{${ref.param}}}`)) {
         return href.replace(`{{${ref.param}}}`, value)
       } else {
-        return prefix + href + `#${ encodeURIComponent(JSON.stringify({[ref.param]: value})) }`
+        // this.$router.push({
+        //   path: prefix + href,
+        //   query: {
+        //     [ref.param]: value,
+        //   }
+        // })
+        return prefix + href + `?${ encodeURIComponent(ref.param) }=${ encodeURIComponent(value) }`
       }
     },
     _isArray: isArray,
@@ -547,8 +723,9 @@ export default {
         if (!confirm(`${action.confirmText}\n\n대상: ${values.join(', ')}`)) return false
       }
 
+      const state_params = this.get_state_params()
       try {
-        let fields = (action.params || []).map(e => {
+        let fields = state_params.concat(action.params || []).map(e => {
           if (e.valueFromSelectedRows) {
             const values = this.tableSelectedRows.map(row => row[`${ e.valueFromSelectedRowsAs || 'id'}`])
             e.value = values
@@ -587,7 +764,7 @@ export default {
           alert(`실패 \n\n${ JSON.stringify(r.data.error) }`)
         } else {
           this._get_query_result_all()
-          this.$root.$emit('reloadAfterSubmit')
+          // this.$root.$emit('reloadAfterSubmit')
           // if (String(action.reloadAfterSubmit) == 'true') {
           // }
           alert('완료')
@@ -806,21 +983,23 @@ export default {
     },
 
     get_state_params() {
-      const merged_params = {}
+      const merged_params = Object.assign({}, this.state_params || {})
       for (const block of this.page.blocks) {
         if (block.type == 'query') {
           if (block.sqlType == 'insert' || block.sqlType == 'update') {
             continue
           }
         }
-        for (const p of block.params) {
-          if (String(p.valueFromRow || 'false') == 'true') continue
-          if (String(p.valueFromEnv || 'false') == 'true') continue
-          if (merged_params[p.key] === undefined) merged_params[p.key] = Object.assign({}, p)
-          merged_params[p.key].value = p.value
+        if (block.params?.length) {
+          for (const p of block.params) {
+            if (String(p.valueFromRow || 'false') == 'true') continue
+            if (String(p.valueFromEnv || 'false') == 'true') continue
+            if (merged_params[p.key] === undefined) merged_params[p.key] = Object.assign({}, p)
+            merged_params[p.key].value = p.value
+          }
         }
       }
-      console.log('this.page.params', this.page.params)
+      // console.log('this.page.params', this.page.params)
       if (this.page.params?.length) {
         for (const p of this.page.params) {
           if (String(p.valueFromRow || 'false') == 'true') continue
@@ -829,7 +1008,7 @@ export default {
           merged_params[p.key].value = p.value
         }
       }
-      console.log('merged_params', merged_params)
+      // console.log('merged_params', merged_params)
       return Object.values(merged_params)
     },
 
@@ -936,9 +1115,10 @@ export default {
         if (block.type != 'query') {
           return console.log('non query block request canceled.')
         }
+        // const state_params = this.get_state_params()
         let fields = block.params
         if (this.page.params) {
-          const merged_params = {}
+          const merged_params = Object.assign({}, this.state_params || {})
           if (block.params) {
             for (const p of block.params) {
               if (!merged_params[p.key]) merged_params[p.key] = Object.assign({}, p)
@@ -950,6 +1130,11 @@ export default {
           }
           fields = Object.values(merged_params)
         }
+
+        if (block.chartOptions) {
+          block.chartOptions.loaded = false
+        }
+
         const time_s = Date.now()
 
         let r;
@@ -999,7 +1184,50 @@ export default {
           }
         }
         this.results[block.name].block = block
-        if (r.data.rows.length > 0) {
+        if (block.chartOptions) {
+          if (r.data.rows.length > 0) {
+            if (!block.chartOptions.data) {
+              block.chartOptions.data = {
+                datasets: [],
+                labels: [],
+              }
+            }
+            if (block.chartOptions.backgroundColor === undefined) {
+              block.chartOptions.backgroundColor = [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+              ]
+            }
+            if (block.chartOptions.borderColor === undefined) {
+              block.chartOptions.borderColor = [
+                'rgba(0,0,0, 0.2)',
+              ]
+            }
+            if (block.chartOptions.borderWidth === undefined) {
+              block.chartOptions.borderWidth = 1
+            }
+            block.chartOptions.data.labels = r.data.rows.map(row => {
+              return row[block.chartOptions.x] || ''
+            })
+            block.chartOptions.data.datasets = flatten([block.chartOptions.y]).map( (y, i) => {
+              const values = r.data.rows.map(e => {
+                return e[y] || null
+              })
+              return {
+                label: block.chartOptions.data.datasets[i]?.label || y,
+                data: values,
+                backgroundColor: block.chartOptions.data.datasets[i]?.backgroundColor || block.chartOptions.backgroundColor,
+                borderColor: block.chartOptions.data.datasets[i]?.borderColor || block.chartOptions.borderColor,
+                borderWidth: block.chartOptions.data.datasets[i]?.borderWidth || block.chartOptions.borderWidth,
+              }
+            })
+          }
+          block.chartOptions.loaded = true
+        } else if (r.data.rows.length > 0) {
           if (block.columnOptions) {
             if (block.columnOptionsAppend) {
               const fields = {}
@@ -1122,6 +1350,7 @@ export default {
         } else {
           this.results[block.name].cols = []
         }
+        this.results[block.name].cols_by_field = keyBy(this.results[block.name].cols, 'field')
 
         if (this.admin_domain == 'current') {
           const {log_sql, log_params} = r.data
@@ -1136,6 +1365,10 @@ export default {
         this.results[block.name].block_idx = i
         this.results[block.name].delay = time_e - time_s
         this.current_block = block
+
+        if (block.tabOptions?.autoload !== undefined && String(block.tabOptions?.autoload) != "false") {
+          this.open_tabOptions(block.tabOptions, (+block.tabOptions.autoload || 1) - 1)
+        }
 
       } catch (error) {
         console.log(error)
@@ -1181,7 +1414,7 @@ export default {
         if (block.type != 'http') {
           return console.log('non http block request canceled.')
         }
-        if (String(block?.axios?.method).toUpperCase() != 'GET') {
+        if (String(block?.axios?.methodType || block?.axios?.method).toUpperCase() != 'GET') {
           return console.log('non GET http block request canceled.')
         }
 
@@ -1209,7 +1442,7 @@ export default {
         }
         let fields = block.params
         if (this.page.params) {
-          const merged_params = {}
+          const merged_params = Object.assign({}, this.state_params || {})
           if (block.params) {
             for (const p of block.params) {
               if (!merged_params[p.key]) merged_params[p.key] = Object.assign({}, p)
@@ -1255,6 +1488,12 @@ export default {
             cols: [],
             rows: [],
           }
+        }
+        if (block.responseTransformation) {
+          const t = new Function('row', block.responseTransformation)
+          r.data.rows = r.data.rows.map(row => {
+            return t(row)
+          })
         }
         if (r.data.rows.length > 0) {
           const cols = Object.keys(r.data.rows[0]).map(e => {
@@ -1353,6 +1592,18 @@ export default {
     },
 
     open_modal(row, block_idx, row_json) {
+      const modalOptions = this.page.blocks[block_idx].viewModal
+      const opt = {
+        name: 'modal2',
+        transition: 'none',
+        class: 'p-4',
+        width: modalOptions.width,
+        height: 'auto',
+        shiftX: modalOptions.shiftX,
+        shiftY: modalOptions.shiftY,
+        clickToClose: String(modalOptions.dismissible) == 'false' ? false : true,
+        scrollable: true,
+      }
       this.$modal.show(
         AdminModal,
         {
@@ -1366,13 +1617,7 @@ export default {
           }),
           row_json: row_json,
           admin_domain: this.admin_domain,
-        },
-        {
-          scrollable: true,
-          height: 'auto',
-          transition: 'none',
-          name: 'modal2',
-        }
+        }, opt
       )
     },
     edit_modal(row, block_idx) {
