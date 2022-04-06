@@ -9,7 +9,12 @@ router.get('/json', [only.id()], (req, res) => {
     'select-configuration': Object.assign({}, global.config.get('select-configuration'), {
       users: undefined,
       'internal-resources': undefined,
-      resources: undefined,
+      resources: (global.config.get('select-configuration.resources') || []).map(e => {
+        return {
+          name: String(e.key).trim(),
+          type: String(e.type).trim(),
+        }
+      }),
     }),
   })
 })
