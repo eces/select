@@ -35,7 +35,7 @@
     "ioredis": "^4.28.3",
     "jsonwebtoken": "^8.5.0",
     "lodash": "^4.17.11",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "morgan": "^1.9.1",
     "mysql2": "^2.3.0",
     "nodemon": "^2.0.15",
