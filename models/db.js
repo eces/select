@@ -50,10 +50,8 @@ module.exports.init = async () => {
         logging: process.env.NODE_ENV == 'development' ? true : false,
         connectTimeoutMS: Math.max(10*1000, r.connectTimeoutMS || 10*1000),
         timezone: r.timezone || '+00:00',
-        // dateStrings: true,
-        // extra: {
-        //   charset: (r.extra && r.extra.charset) || r.charset || "utf8mb4_general_ci",
-        // },
+        ssl: r.ssl,
+        ...connectionAttributes
       })
     } else {
       throw new Error('server error: not supported resource[type].')
