@@ -105,6 +105,8 @@ export default {
     this.form.code = this.$route.query.code
     this.form.email = this.$route.query.email
 
+    document.title = `${this.$t('Login.title')} - ${this.$t('App.name')}`
+
     try {
       await this.$store.dispatch('session')
       if (this.$store.state.session.id) {
