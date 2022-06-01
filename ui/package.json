@@ -25,6 +25,7 @@
     "sql-formatter": "^4.0.2",
     "vue": "^2.6.11",
     "vue-good-table": "^2.21.11",
+    "vue-i18n": "^8.27.1",
     "vue-js-modal": "^2.0.1",
     "vue-router": "^3.2.0",
     "vue-simple-context-menu": "^3.4.2",

@@ -15,23 +15,23 @@ div
   .container.my-4(style='max-width: 480px')
     .bg-white.shadow-sm.p-4.rounded
 
-      h5.text-secondary.text-center.mt-1.mb-1(style='letter-spacing: -0.5px; font-weight: 600') 셀렉트 어드민 로그인
+      h5.text-secondary.text-center.mt-1.mb-1(style='letter-spacing: -0.5px; font-weight: 600') {{ $t('Login.title') }}
 
 
 
       a.btn.btn-light.border.shadow-sm.w-100.py-3(href='#' @click.prevent='continue_google') 
         span.mdi.mdi-google.me-2.text-primary
-        span Sign in with Google 구글 계정으로 로그인
+        span {{ $t('Login.sign_in_with_google') }}
         br 
 
       .border-top.my-4(style='opacity: 0.5')
 
       form(@submit.prevent='login')
-        strong.mb-2: small 이메일
+        strong.mb-2: small {{ $t('Login.login') }}
         input.form-control.form-control-lg(type='text' v-model='form.id' autofocus)
-        strong.mb-2: small 비밀번호
+        strong.mb-2: small {{ $t('Login.password') }}
         input.form-control.form-control-lg(type='password' v-model='form.pw')
-        button.btn.btn-light.border.py-2.px-4.mt-1(type='submit') 로그인
+        button.btn.btn-light.border.py-2.px-4.mt-1(type='submit') {{ $t('Login.submit') }}
       //- .border-top.my-4(style='opacity: 0.5')
     
       //- form.async(:class='{done:done}' @submit.prevent='login' v-if='!challenge_id')
@@ -50,9 +50,9 @@ div
       //- .border-top.my-4(style='opacity: 0.5')
       .border-top.my-4(style='opacity: 0.5')
       footer.d-flex
-        a.me-auto(target='_blank' href='https://selectfromuser.com/changelog') 설치형 버전:{{env.VUE_APP_VERSION}}
+        a.me-auto(target='_blank' href='https://selectfromuser.com/changelog') {{ $t('Login.installed_version', { version: env.VUE_APP_VERSION }) }}
           strong.ms-2(v-show='next_version' style='background-color: rgb(253, 236, 200); color: rgb(64, 44, 27); padding: 0.25rem; border-radius: 3px; font-weight: 600; border: solid 1px rgba(0,0,0,0.015)') 새로운 업데이트 {{ next_version }}
-        a.ms-auto(target='_blank' href='https://docs.selectfromuser.com') 도움말
+        a.ms-auto(target='_blank' href='https://docs.selectfromuser.com') {{ $t('Login.help') }}
   //- div.bg-white.m-4.p-4
 
     pre {{$store.state.session}}
@@ -104,6 +104,8 @@ export default {
     this.challenge_id = this.$route.query.challenge_id
     this.form.code = this.$route.query.code
     this.form.email = this.$route.query.email
+
+    document.title = `${this.$t('Login.title')} - ${this.$t('App.name')}`
 
     try {
       await this.$store.dispatch('session')

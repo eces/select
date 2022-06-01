@@ -118,7 +118,18 @@ Vue.filter('sanitizeHtml', value => {
   return sanitizeHtml(value)
 })
 
+import VueI18n from 'vue-i18n'
+Vue.use(VueI18n)
+
+import messages from './i18n/messages'
+
+const i18n = new VueI18n({
+  locale: 'en',
+  messages,
+})
+
 new Vue({
+  i18n,
   router,
   render: h => h(App)
 }).$mount('#app')
