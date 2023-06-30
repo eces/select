@@ -10,6 +10,12 @@
 <img src="https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png" alt="" loading="lazy" width="720" srcset="https://blog.selectfromuser.com/content/images/size/w600/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 600w, https://blog.selectfromuser.com/content/images/size/w1000/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1000w, https://blog.selectfromuser.com/content/images/2022/03/Screen-Shot-2022-03-11-at-6.09.23-PM.png 1394w" sizes="(min-width: 720px) 720px">
 </div>
 
+<p>운영 툴을 채우는 새로운 방법</p>
+<p>어드민 페이지를 만들고 배포하고 관리하기에는 어렵고 SQL 쿼리와 API를 매번 만들면 시간이 계속 늘어납니다. 다른 방법은 없을까요?</p>
+<p>최소 비용으로 빠른 기간내 팀 협업을 성공. 고객조회, 매출분석, 지표통계, 컨텐츠관리, 이력조회를 가입 후 3일 안에 해결하고 있습니다.</p>
+<p>더 이상 DB, API 클라이언트에 의존하지 않아도 돼요.</p>
+<span style="background-color: rgb(221, 244, 255); color: rgb(9, 105, 218); padding: 0.5rem; border-radius: 1rem;">설치형(로컬 실행 가능한) 오픈소스 업데이트를 준비중입니다! 조금만 기다려주세요.</span>
+
 <br />
 
 ## Features
@@ -45,10 +51,10 @@ Install package from `npm install -g selectfromuser` or `yarn global add selectf
 
 #### ko-KR
 
-- [개발자 문서](https://docs.selectfromuser.com/guide/)
+- [Documentation 개발자 문서](https://docs.selectfromuser.com/docs)
 - [Official Website 공식웹사이트](https://www.selectfromuser.com/)
-- [UI Components 컴포넌트](https://app.selectfromuser.com/components)
-- [업데이트 내역](https://www.selectfromuser.com/changelog)
+- [UI Components 컴포넌트](https://www.selectfromuser.com/components)
+- [Changelog 업데이트 내역](https://docs.selectfromuser.com/changelog)
 
 ### Sample Recipe
 
