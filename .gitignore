@@ -6,3 +6,4 @@ config/local.yml
 .debugs
 .DS_Store
 local.yml
+.select

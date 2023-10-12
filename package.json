@@ -1,65 +1,101 @@
 {
   "name": "selectfromuser",
-  "version": "1.1.31",
+  "version": "2.2.5",
   "description": "A tool for admin/backoffice UI using YAML with SQL, RESTful API connectivity.",
-  "main": "index.js",
+  "main": "cli.dist.js",
   "scripts": {
-    "prepublishOnly": "cd ui; npm run build;",
+    "prepublishOnly": "npm run build;",
     "test": "ava tests/*.js",
     "start": "npm run api",
-    "dev": "NODE_CONFIG_DIR=./config npm run api",
-    "api": "PORT=8000 NODE_ENV=development nodemon ./bin/select --ignore ./tests --ignore ./ui --watch ./config/local.yml --watch ."
+    "api": "PORT=9300 NODE_ENV=development nodemon -x \"node --no-node-snapshot\" ./cli --ignore ./tests --ignore ./ui",
+    "api:dist": "PORT=9300 __SELECT_BUILD=true nodemon -x \"node --no-node-snapshot\" ./cli --ignore ./tests --ignore ./ui",
+    "dev": "PORT=9300 NODE_ENV=development nodemon -x \"node --no-node-snapshot\" ./cli -e yml,yaml --ignore ./node_modules",
+    "cli": "PORT=9300 NODE_ENV=development node --no-node-snapshot ./cli",
+    "cli:dist": "PORT=9300 NODE_ENV=development node --no-node-snapshot ./cli.dist.js",
+    "build": "node ./build.js"
   },
   "bin": {
-    "selectfromuser": "bin/select",
-    "slt": "bin/select"
+    "selectfromuser": "cli.dist.js",
+    "slt": "cli.dist.js"
   },
+  "files": [
+    "cli.dist.js",
+    "README.md",
+    "package.json"
+  ],
   "dependencies": {
-    "@sentry/node": "^6.18.1",
-    "@sentry/tracing": "^6.18.1",
-    "axios": "^0.24.0",
-    "boxen": "^6.2.1",
+    "alasql": "^4.1.7",
+    "atob": "^2.1.2",
+    "axios": "^1.5.1",
+    "boxen": "^7.1.1",
+    "btoa": "^1.2.1",
     "chalk": "^4.1.2",
-    "commander": "^8.3.0",
-    "config": "^3.0.1",
+    "chokidar": "^3.5.3",
+    "commander": "^11.0.0",
     "cors": "^2.8.5",
-    "cp-file": "^9.1.0",
     "debug": "^4.1.1",
     "debugs": "^1.0.11",
+    "diff": "^5.1.0",
+    "dotenv": "^16.3.1",
     "errorhandler": "^1.5.0",
     "excel-date-to-js": "^1.1.4",
     "express": "^4.16.4",
-    "get-installed-path": "^4.0.8",
+    "express-subdomain": "^1.0.5",
+    "form-data": "^4.0.0",
+    "generic-pool": "^3.9.0",
+    "glob": "^10.3.10",
     "googleapis": "^92.0.0",
+    "got": "^13.0.0",
     "http-errors": "^1.7.1",
-    "ioredis": "^4.28.3",
+    "inquirer": "^8.2.6",
+    "ioredis": "^4.28.0",
+    "ip": "^1.1.8",
+    "ip-cidr": "^3.1.0",
+    "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.0",
+    "livereload": "^0.9.3",
     "lodash": "^4.17.11",
-    "moment": "^2.29.1",
+    "moment": "^2.24.0",
+    "mongodb": "^3.7.3",
     "morgan": "^1.9.1",
+    "multer": "^1.4.5-lts.1",
     "mysql2": "^2.3.0",
-    "nodemon": "^2.0.15",
-    "package-json": "^7.0.0",
+    "nanoid": "^3.3.6",
+    "node-sql-parser": "^4.11.0",
+    "open": "^8.4.2",
+    "package-json": "^8.1.1",
+    "parse-duration": "^1.1.0",
     "pg": "^8.7.3",
+    "prettyjson": "^1.2.5",
+    "private-ip": "^2.3.3",
+    "pug": "^2.0.3",
+    "semver": "^7.5.4",
     "serve-favicon": "^2.5.0",
     "serve-static": "^1.14.1",
-    "typeorm": "^0.2.12",
-    "uuid": "^8.3.2",
-    "winston": "^3.4.0"
+    "typeorm": "^0.2.45",
+    "uuid": "^9.0.0",
+    "vm2": "^3.9.19",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
-    "ava": "^1.2.0"
+    "ava": "^1.2.0",
+    "esbuild": "0.19.2",
+    "nodemon": "^1.18.9",
+    "supertest": "^4.0.2"
+  },
+  "overrides": {
+    "mssql": "^9.3.2"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/eces/select.git"
   },
-  "author": "",
+  "author": "Selectfromuser Inc.",
   "license": "Elastic License 2.0 (SEE IN LICENSE)",
   "bugs": {
     "url": "https://github.com/eces/select/issues"
   },
-  "homepage": "https://docs.selectfromuser.com",
+  "homepage": "https://github.com/eces/select#readme",
   "debugs": [
     "select:*"
   ]
