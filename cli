@@ -10,6 +10,7 @@
  * Commercial Licensed. Grant use for paid permitted user only.
  */
 
+require('dotenv').config()
 
 global.__API_BASE = process.env.__SELECT_BUILD ? 'https://api.selectfromuser.com' : 'http://localhost:9500'
 const WEB_BASE = process.env.__SELECT_BUILD ? 'https://app.selectfromuser.com' : 'http://localhost:5173'
@@ -363,7 +364,7 @@ async function dev() {
     const config_path = path.join(process.env.CWD || process.cwd(), '.select', 'project.json')
     // console.log('Using token and configuration from', config_path)
     // console.log('')
-    if (!fs.existsSync(config_path)) {
+    if (!process.env.TOKEN && !fs.existsSync(config_path)) {
       console.log(chalk.blue('[INFO]'), 'Please sign in to your team.')
       console.log('')
       await login()
@@ -371,20 +372,32 @@ async function dev() {
       // return
     }
     
-    let config = require(config_path)
+    const require_or_env = (config_path) => {
+      if (process.env.TOKEN && process.env.TEAM_ID) {
+        return {
+          token: process.env.TOKEN,
+          team_id: process.env.TEAM_ID,
+        }
+      } else {
+        return require(config_path)
+      }
+    }
+
+    let config = require_or_env(config_path)
     if (!config.token) {
       console.log(chalk.blue('[INFO]'), 'Please sign in to your team.')
       console.log('')
       await login()
     }
-    // console.log("config", config)
     
     process.env.TOKEN = config.token || ''
     process.env.TEAM_ID = config.team_id || ''
+    // console.log("config", config)
+    
     process.env.SELFHOST = true
 
     // console.log('process.env.TEAM_ID', process.env.TEAM_ID, !process.env.TEAM_ID)
-    config = require(config_path)
+    config = require_or_env(config_path)
     if (!process.env.TEAM_ID) {
       await link()
     }
@@ -403,6 +416,7 @@ async function dev() {
         console.log(chalk.blue('[INFO]'), 'Login expired. Please sign in to your team.')
         console.log('')
         await login()
+        return
       }
       throw new Error(r.data.message)
     }
