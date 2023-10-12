@@ -1,8 +1,5 @@
-const {debug, info, error} = require(__absolute + '/log')('select:app')
+const debug = require('debug')('select:log')
 const { getConnection } = require('typeorm')
-const axios = require('axios').create({
-  timeout: 5000,
-})
 
 const EventEmitter = require('events')
 
@@ -10,19 +7,43 @@ class LogEventEmitter extends EventEmitter {}
 
 const ee = new LogEventEmitter()
 
+ee.on('query source', async ({team_id, teamrow_id, user_id, json}) => {
+  try {
+    debug('query source', {team_id, teamrow_id, user_id, json})
+  } catch (error) {
+    debug(error.stack)
+  }
+})
+
 ee.on('query run', async ({team_id, teamrow_id, user_id, json}) => {
-  info('query run', team_id, teamrow_id, user_id, json)
+  try {
+    debug('query run', {team_id, teamrow_id, user_id, json})
+  } catch (error) {
+    debug(error.stack)
+  }
+})
+
+ee.on('query profile', async ({team_id, teamrow_id, user_id, json}) => {
+  try {
+    debug('query profile', {team_id, teamrow_id, user_id, json})
+  } catch (error) {
+    debug(error.stack)
+  }
 })
 
 ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
-  error('query error', team_id, teamrow_id, user_id, json)
+  try {
+    debug('query error', {team_id, teamrow_id, user_id, json})
+  } catch (error) {
+    debug(error.stack)
+  }
 })
 
 {
   const name = 'connection new'
   ee.on(name, async (opt) => {
     const {team_id, teamrow_id, json} = opt
-    info(name, team_id, teamrow_id, json)
+    debug(name, opt)
   })
 }
 
@@ -30,7 +51,7 @@ ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
   const name = 'connection pool'
   ee.on(name, async (opt) => {
     const {team_id, teamrow_id, json} = opt
-    info(name, team_id, teamrow_id, json)
+    debug(name, opt)
   })
 }
 
@@ -38,7 +59,7 @@ ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
   const name = 'connection failed'
   ee.on(name, async (opt) => {
     const {team_id, teamrow_id, json} = opt
-    error(name, team_id, teamrow_id, json)
+    debug(name, opt)
   })
 }
 
@@ -46,7 +67,7 @@ ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
   const name = 'connection server error'
   ee.on(name, async (opt) => {
     const {team_id, teamrow_id, json} = opt
-    error(name, team_id, teamrow_id, json)
+    debug(name, opt)
   })
 }
 
@@ -54,25 +75,15 @@ ee.on('query error', async ({team_id, teamrow_id, user_id, json}) => {
   const name = 'connection test error'
   ee.on(name, async (opt) => {
     const {team_id, user_id, json} = opt
-    error(name, team_id, teamrow_id, json)
+    debug(name, opt)
   })
 }
 
 {
-  const name = 'session activity'
+  const name = 'init connections error'
   ee.on(name, async (opt) => {
-    try {
-      await axios.post('https://api.selectfromuser.com/api/license/2022-01-26/session-activity', {
-        key: global.config['license-key'] || '',
-        email: opt.email,
-        sql_type: opt.sql_type,
-        http_method: opt.http_method,
-        block_name: opt.block_name,
-        response_type: opt.response_type,
-      })
-    } catch (e) {
-      error(e)
-    }
+    const {json} = opt
+    debug(name, opt)
   })
 }
 
