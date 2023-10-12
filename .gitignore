@@ -1,9 +1,13 @@
 node_modules
 temp
-dist
 .vscode
-config/local.yml
 .debugs
 .DS_Store
-local.yml
+*.dist.js
+*.tgz
+.env*
+!.env.project
+!.env.vault
 .select
+
+*.yml
