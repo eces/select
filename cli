@@ -416,9 +416,11 @@ async function dev() {
         console.log(chalk.blue('[INFO]'), 'Login expired. Please sign in to your team.')
         console.log('')
         await login()
+        await dev()
         return
+      } else {
+        throw new Error(r.data.message)
       }
-      throw new Error(r.data.message)
     }
 
     const files = await glob('**/*.{yml,yaml}', {
