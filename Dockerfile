@@ -1,4 +1,4 @@
-FROM node:17-alpine
+FROM node:16-alpine
 
 LABEL org.opencontainers.image.source=https://github.com/eces/select
 

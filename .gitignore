@@ -11,3 +11,4 @@ temp
 .select
 
 *.yml
+!docker-compose.yml

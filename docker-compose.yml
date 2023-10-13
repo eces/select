@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  app:
+    # image: select:latest
+    image: selectfromuser/admin:latest
+    environment:
+      - TOKEN
+      - TEAM_ID
+      - PORT=9300
+      # - ENV_MYSQL_HOST
+      # - ENV_MYSQL_DATABASE
+      # - ENV_MYSQL_USER
+      # - ENV_MYSQL_PASSWORD
+    ports:
+      - "9300:9300"
