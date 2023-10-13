@@ -55,6 +55,8 @@
 
 ## Usage
 
+### CLI
+
 - `npm install -g selectfromuser`
 - `selectfromuser`
 
@@ -68,6 +70,10 @@ Others
 > `selectfromuser init`
 > `selectfromuser dev`
 
+### Docker container image
+
+https://hub.docker.com/r/selectfromuser/admin
+https://github.com/eces/select/blob/main/docker-compose.yml
 
 ## Documentation
 
