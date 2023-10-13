@@ -13,3 +13,4 @@ services:
       # - ENV_MYSQL_PASSWORD
     ports:
       - "9300:9300"
+      - "35762:35762"
