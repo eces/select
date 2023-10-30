@@ -2301,13 +2301,10 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         statusText: error.response?.statusText,
         data: error.response?.data,
         body: error.response?.body,
+        message: error?.message,
       }
       // debug(resp)
-      let plain_error = JSON.stringify(Object.assign({}, error, {
-        driverError: undefined,
-        stack: undefined,
-        config: undefined,
-      }))
+      let plain_error = JSON.stringify(Object.assign({}, resp))
       // debug(plain_error, resp)
       // debug(keys_by_name)
       for (const key of keys) {
