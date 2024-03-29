@@ -191,7 +191,7 @@ async function login() {
 
     async function check () {
 
-      if (++count > 60) {
+      if (++count > 300) {
         console.log('')
         return console.log(chalk.blue('[INFO]'), 'Session expired. Please retry.')
       }
