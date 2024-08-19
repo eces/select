@@ -10,5 +10,5 @@ temp
 !.env.vault
 .select
 
-*.yml
+# *.yml
 !docker-compose.yml

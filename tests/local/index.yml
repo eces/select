@@ -1,0 +1,72 @@
+title: 셀렉트어드민
+
+layout:
+  style:
+    backgroundColor: "#19234B !important"
+
+menus:
+- group: 회원
+  name: 고객 관리
+  path: users
+  placement: menu-only
+  redirect: users/active
+  icon: mdi-account
+  
+  menus:
+  - name: 결제 관리
+    path: payments
+    placement: menu-only
+    icon: mdi-timeline-check
+
+- group: 회원
+  name: 최근가입자 목록
+  path: users/active
+  placement: tab-only
+
+- group: 회원
+  name: 휴면회원 목록
+  path: users/dormant
+  placement: tab-only
+
+- group: 회원
+  name: 마케팅 수신동의
+  path: users/promotion
+  placement: tab-only
+
+- group: 기타메뉴
+  name: 공식 문서 
+  path: https://docs.selectfromuser.com
+  target: _blank
+  icon: mdi-book-open-variant
+  iconEnd: 링크
+
+- group: 기타메뉴
+  name: 클라우드 이용
+  path: https://app.selectfromuser.com
+  target: _blank
+  icon: mdi-tab
+  iconEnd: 링크
+
+# resources:
+# - name: mysql.dev
+#   mode: local
+#   type: mysql
+#   host: aaaa.ap-northeast-2.rds.amazonaws.com
+#   port: 3306
+#   username: user_aaaa
+#   password: aaaa
+#   database: aaaa
+#   timezone: '+00:00'
+#   extra:
+#     charset: utf8mb4_general_ci
+
+# pages:
+# - path: healthcheck/db
+#   blocks:
+#   - type: query
+#     resource: mysql.dev
+#     sql: SELECT NOW()
+
+# keys:
+# - name: AWS_URL
+#   value: http://localhost:9300
