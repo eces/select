@@ -2148,9 +2148,8 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
       }
 
       // do match for params {{ id }}
+      // seek ENVs first
       for (const param of fields) {
-        let v;
-        // debug('param.valueFromEnv', param.valueFromEnv)
         if (param.valueFromEnv) {
           if (String(param.valueFromEnv) == 'true') {
             param.valueFromEnv = param.key
@@ -2163,6 +2162,36 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
             throw StatusError(400, 'param.valueFromEnv not found: ' + param.valueFromEnv)
           }
         }
+      }
+      // match code_fields then replacement
+      for (const param of fields) {
+        let _evals = json.match(/\{\{(.*?)\}\}/gm)
+        if (_evals) {
+          _evals = _evals.map(e => {
+            return JSON.parse(`"${e.slice(2, -2)}"`)
+          })
+          if (req.body.code_fields) {
+            if (!_.isArray(req.body.code_fields) && req.body.code_fields[0] == '[') {
+              req.body.code_fields = JSON.parse(req.body.code_fields)
+            }
+            for (const _eval of _evals) {
+              // valueFromEnv cannot be from code_fields
+              if (keys_by_name[String(_eval).trim()] && keys_by_name[String(_eval).trim()].used) {
+                const keyName = String(_eval).trim()
+                json = String(json).replace(`{{${_eval}}}`, `{{${keyName}}}`)
+                continue
+              }
+              const field = req.body.code_fields.find(e => {
+                return String(e.code).trim() == String(_eval).trim()
+              })
+              if (field) {
+                json = String(json).replace(`"{{${JSON.stringify(field.code).slice(1,-1)}}}"`, JSON.stringify(field.value))
+              }
+            }
+          }
+        }
+
+        let v;
         if (param.values) {
           v = JSON.stringify(param.values)
           json = String(json).replace(new RegExp(`\"\{\{(\ )?encodeURIComponent\(${param.key}\)(\ )?\}\}\"`, 'g'), encodeURIComponent(v))
@@ -2210,24 +2239,6 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
       }
 
       // do match for evals {{ CODE }}
-      let _evals = json.match(/\{\{(.*?)\}\}/gm)
-      if (_evals) {
-        _evals = _evals.map(e => {
-          return JSON.parse(`"${e.slice(2, -2)}"`)
-        })
-        // console.log('has eval', _evals, req.body.code_fields)
-        if (req.body.code_fields) {
-          for (const _eval of _evals) {
-            // debug('eval > ', eval)
-            const field = req.body.code_fields.find(e => e.code == _eval)
-            if (field) {
-              // debug('match > ', field, `"{{${JSON.stringify(field.code).slice(1,-1)}}}"`)
-              json = String(json).replace(`"{{${JSON.stringify(field.code).slice(1,-1)}}}"`, JSON.stringify(field.value))
-              // debug('replace > ', json)
-            }
-          }
-        }
-      }
 
       config = JSON.parse(json)
       
