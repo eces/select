@@ -2067,6 +2067,31 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         }
       }
 
+      {
+        // block roles edit
+        if (block.roles?.edit) {
+          if (_.isArray(req.user_role.group_json) && req.user_role.group_json.length > 0) {
+            session_roles = req.user_role.group_json
+          } else {
+            const u = config_root.users.find(e => e.email == req.session.email)
+            if (u) {
+              session_roles = u.roles
+            }
+          }
+          session_roles.push(`email::${req.session.email}`)
+          if (req.user_role) {
+            session_roles.push(`select::${req.user_role.name}`)
+          }
+  
+          // check view
+          const required_roles = _.flatten([block.roles.edit])
+          // debug({session_roles, required_roles})
+          if (_.intersection(session_roles, required_roles).length === 0) {
+            throw StatusError(403, '(api block not allowed)')
+          }
+        }
+      }
+
       if (block && block.params) {
         const has_user_property = (fields || []).filter(e => e.valueFromUserProperty).length > 0
         if (has_user_property) {
