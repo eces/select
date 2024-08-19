@@ -56,7 +56,6 @@ const publish = (next) => {
     to(channel) {
       return {
         emit(name, opt) {
-          debug(`[socket.io]`, name)
           console.dir(opt, {depth: null})
         }
       }
@@ -2261,16 +2260,25 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         const data = new FormData()
 
         if (config.json) {
-          data.append('json', JSON.stringify(config.data))
+          data.append('json', JSON.stringify(config.data), {
+            contentType: 'application/json',
+          })
         } else {
           for (const field of fields) {
             if (field.valueFromEnv) continue
-            data.append(field.key, field.value)
+            if (field.key == 'code_fields') continue
+
+            const param = block.params.find(e => e.key == field.key) || {}
+
+            data.append(field.key, field.value, {
+              contentType: param.contentType,
+            })
           }
         }
         for (const file of req.files) {
           data.append(file.fieldname, file.buffer, {
-            filename: file.originalname
+            filename: file.originalname,
+            contentType: file.contentType,
           })
         }
         config.headers = {
