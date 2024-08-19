@@ -2105,6 +2105,11 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
                 value: req.session.email
               }
             }
+            else if (valueFromUserProperty == '{{id}}') {
+              found = {
+                value: req.session.id
+              }
+            }
             else if (valueFromUserProperty == '{{name}}') {
               let name = req.user_role.profile_name
               if (!name) {
