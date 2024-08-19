@@ -1,0 +1,62 @@
+pages:
+- path: payments
+  title: 결제 및 환불
+  blocks:
+  - type: markdown
+    content: |
+      > 최근 7일 대상자 목록
+  
+  # - type: query
+  #   name: Data from Query
+  #   resource: mysql.dev
+  #   sql: |
+  #     SELECT * 
+  #     FROM chat 
+  #     ORDER BY id DESC
+  #     LIMIT 3
+  #   tableOptions:
+  #     cell: true
+
+  - type: http
+    axios:
+      method: GET
+      url: https://api.selectfromuser.com/sample-api/users
+    rowsPath: rows
+    columns:
+      name:
+        label: Name
+      age:
+        label: Engagement Point
+
+    showDownload: csv
+
+    viewModal:
+      useColumn: id
+      # mode: side
+      blocks:
+      - type: http
+        axios:
+          method: GET
+          url: https://api.selectfromuser.com/sample-api/users/{{user_id}}
+        rowsPath: rows
+        
+        params:
+        - key: user_id
+          valueFromRow: id
+
+        display: col-2
+        title: "ID: {{id}}"
+        showSubmitButton: false
+        
+
+        tabOptions:
+          autoload: 1
+          tabs:
+          - name: 최근거래내역
+            blocks: 
+            - type: markdown
+              content: 거래내역 내용
+          - name: 프로모션참여
+            blocks: 
+            - type: markdown
+              content: 프로모션 내용

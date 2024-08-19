@@ -1,0 +1,79 @@
+pages:
+- path: users/active
+  blocks: 
+  # - type: markdown
+  #   content: >
+  #     ## 7일 가입자 조회
+  - type: http
+    sqlType: select
+    name: LIST
+    axios:
+      url: http://localhost:9300/users
+      method: GET
+    rowsPath: rows
+    selectOptions:
+      enabled: true
+    actions:
+      - type: http
+        modal: true
+        axios: 
+          url: "{{APP_AWS_URL}}/users/send"
+          method: POST
+          data:
+            "userIds": [1,2,3]
+            "name": "{{name}}"
+            "mobile": "{{mobile}}"
+            "title": "title"
+        params:
+          - key: name
+            valueFromSelectedRows: true
+          - key: mobile
+            valueFromSelectedRows: true
+          - key: APP_AWS_URL
+            valueFromEnv: true
+        forEach: true
+        reloadAfterSubmit: true
+      # - type: http
+      #   label: Download
+      #   axios: 
+      #     url: "{{APP_AWS_URL}}/users/export"
+      #     method: POST
+      #     data:
+      #       "userIds": "{{ name.value }}"
+      #   params:
+      #     - key: name
+      #       valueFromSelectedRows: true
+      #     - key: APP_AWS_URL
+      #       valueFromEnv: true
+      #   # forEach: true
+      #   # reloadAfterSubmit: true
+      - type: http
+        label: Download
+        single: true
+        axios: 
+          url: "{{APP_AWS_URL}}/users/export"
+          method: POST
+          # data:
+          #   "userIds": "{{ name.value }}"
+        # responseType: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+        responseType: blob
+        filename: UserExport.xlsx
+        params:
+          # - key: name
+          #   valueFromSelectedRows: true
+          - key: APP_AWS_URL
+            valueFromEnv: true
+        # forEach: true
+        # reloadAfterSubmit: true
+    
+- path: users/dormant
+  blocks:
+  - type: markdown
+    content: >
+      ## 휴면회원 조회
+    
+- path: users/promotion
+  blocks:
+  - type: markdown
+    content: >
+      ## 동의/미동의 조회

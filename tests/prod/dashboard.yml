@@ -1,0 +1,115 @@
+pages:
+- 
+  id: dashboard
+  path: dashboard
+  layout: dashboard
+  style:
+    background-color: "#f4f5f8"
+
+  title: 사용자 현황
+  # subtitle: 대시보드
+
+  params:
+  - key: date
+    format: date
+        
+  blocks:
+  - type: left
+    layout: dashboard
+    style:
+      width: 400px
+    blocks:
+    - type: http
+      axios:
+        method: GET
+        url: http://localhost:9500/sample-api/dashboard/users
+      rowsPath: rows
+      # display: metric
+      width: 100%
+      showDownload: csv
+      params:
+      - key: date
+        valueFromRow: date
+      - key: t1
+
+  #   - type: http
+  #     name: 2
+  #     axios:
+  #       method: GET
+  #       url: http://localhost:9500/sample-api/dashboard/revenue
+  #     rowsPath: rows
+  #     display: metric
+  #     width: 100%
+  #     style:
+  #       color: RoyalBlue
+  #     showDownload: false
+  #     params:
+  #     - key: date
+  #       valueFromRow: date
+
+
+
+  #   - type: http
+  #     axios:
+  #       method: GET
+  #       url: http://localhost:9500/sample-api/dashboard/rank
+  #     rowsPath: rows
+
+  #     name: category
+  #     display: metric
+  #     width: 100%
+      
+  #     metricOptions:
+  #       type: category
+  #       names: 
+  #         - 활성
+  #         - 비활성
+  #       value: c
+  #       total: 최근가입자
+  #     showDownload: false
+
+  #   - type: http
+  #     axios:
+  #       method: GET
+  #       url: http://localhost:9500/sample-api/dashboard/stores
+  #     rowsPath: rows
+  #     name: 신규 가입 업체
+  #     width: 100%
+  #     height: calc(50vh - 150px)
+  #     style:
+  #       overflow: auto
+      
+  #     display: card
+  #     showDownload: false
+    
+  # - type: center
+  #   layout: dashboard
+  #   style:
+  #     width: 50%
+  #     border: 0
+  #   blocks:
+  #   - type: http
+  #     axios:
+  #       method: GET
+  #       url: http://localhost:9500/sample-api/dashboard/orders
+  #     rowsPath: rows
+  #     name: 최근 방문자
+  #     width: 100%
+  #     height: calc(100vh - 200px)
+  #     chartOptions:
+  #       backgroundColor:
+  #         - "#0D6EFD"
+  #       borderWidth:
+  #         - 0
+  #       style:
+  #         # minWidth: 500px
+  #       type: bar
+  #       x: x
+  #       y: y
+  #       label: 일간 로그인
+  #       options:
+  #         layout:
+  #           padding: 10
+  #       interval: day
+  #       gap: true
+  #     showDownload: csv
