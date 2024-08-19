@@ -53,10 +53,11 @@ const get_message = (block, fields) => {
 
 const publish = (next) => {
   const io = {
-    to(name) {
+    to(channel) {
       return {
-        emit(opt) {
-          debug(`[socket.io] ${name}`, opt)
+        emit(name, opt) {
+          debug(`[socket.io]`, name)
+          console.dir(opt, {depth: null})
         }
       }
     }
