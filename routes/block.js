@@ -2316,6 +2316,20 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         r = {
           data: r
         }
+      } else if (block.responseType == 'blob') {
+        config.responseType = 'arraybuffer'
+
+        r = await external_axios(config)
+        const buffer = r.data
+
+        res.status(200)
+        res.set({
+          'Content-Disposition': r.headers.get('Content-Disposition'),
+          'Content-Type': r.headers.get('Content-Type'),
+          'Access-Control-Expose-Headers': 'Content-Disposition',
+        })
+        res.send(Buffer.from(buffer, 'binary').toString('base64'))
+        return
       } else {
         r = await external_axios(config)
       }
