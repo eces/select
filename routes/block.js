@@ -53,10 +53,10 @@ const get_message = (block, fields) => {
 
 const publish = (next) => {
   const io = {
-    to(name) {
+    to(channel) {
       return {
-        emit(opt) {
-          debug(`[socket.io] ${name}`, opt)
+        emit(name, opt) {
+          console.dir(opt, {depth: null})
         }
       }
     }
@@ -2066,6 +2066,31 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         }
       }
 
+      {
+        // block roles edit
+        if (block.roles?.edit) {
+          if (_.isArray(req.user_role.group_json) && req.user_role.group_json.length > 0) {
+            session_roles = req.user_role.group_json
+          } else {
+            const u = config_root.users.find(e => e.email == req.session.email)
+            if (u) {
+              session_roles = u.roles
+            }
+          }
+          session_roles.push(`email::${req.session.email}`)
+          if (req.user_role) {
+            session_roles.push(`select::${req.user_role.name}`)
+          }
+  
+          // check view
+          const required_roles = _.flatten([block.roles.edit])
+          // debug({session_roles, required_roles})
+          if (_.intersection(session_roles, required_roles).length === 0) {
+            throw StatusError(403, '(api block not allowed)')
+          }
+        }
+      }
+
       if (block && block.params) {
         const has_user_property = (fields || []).filter(e => e.valueFromUserProperty).length > 0
         if (has_user_property) {
@@ -2077,6 +2102,11 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
             if (valueFromUserProperty == '{{email}}') {
               found = {
                 value: req.session.email
+              }
+            }
+            else if (valueFromUserProperty == '{{id}}') {
+              found = {
+                value: req.session.id
               }
             }
             else if (valueFromUserProperty == '{{name}}') {
@@ -2117,9 +2147,8 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
       }
 
       // do match for params {{ id }}
+      // seek ENVs first
       for (const param of fields) {
-        let v;
-        // debug('param.valueFromEnv', param.valueFromEnv)
         if (param.valueFromEnv) {
           if (String(param.valueFromEnv) == 'true') {
             param.valueFromEnv = param.key
@@ -2132,6 +2161,36 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
             throw StatusError(400, 'param.valueFromEnv not found: ' + param.valueFromEnv)
           }
         }
+      }
+      // match code_fields then replacement
+      for (const param of fields) {
+        let _evals = json.match(/\{\{(.*?)\}\}/gm)
+        if (_evals) {
+          _evals = _evals.map(e => {
+            return JSON.parse(`"${e.slice(2, -2)}"`)
+          })
+          if (req.body.code_fields) {
+            if (!_.isArray(req.body.code_fields) && req.body.code_fields[0] == '[') {
+              req.body.code_fields = JSON.parse(req.body.code_fields)
+            }
+            for (const _eval of _evals) {
+              // valueFromEnv cannot be from code_fields
+              if (keys_by_name[String(_eval).trim()] && keys_by_name[String(_eval).trim()].used) {
+                const keyName = String(_eval).trim()
+                json = String(json).replace(`{{${_eval}}}`, `{{${keyName}}}`)
+                continue
+              }
+              const field = req.body.code_fields.find(e => {
+                return String(e.code).trim() == String(_eval).trim()
+              })
+              if (field) {
+                json = String(json).replace(`"{{${JSON.stringify(field.code).slice(1,-1)}}}"`, JSON.stringify(field.value))
+              }
+            }
+          }
+        }
+
+        let v;
         if (param.values) {
           v = JSON.stringify(param.values)
           json = String(json).replace(new RegExp(`\"\{\{(\ )?encodeURIComponent\(${param.key}\)(\ )?\}\}\"`, 'g'), encodeURIComponent(v))
@@ -2179,24 +2238,6 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
       }
 
       // do match for evals {{ CODE }}
-      let _evals = json.match(/\{\{(.*?)\}\}/gm)
-      if (_evals) {
-        _evals = _evals.map(e => {
-          return JSON.parse(`"${e.slice(2, -2)}"`)
-        })
-        // console.log('has eval', _evals, req.body.code_fields)
-        if (req.body.code_fields) {
-          for (const _eval of _evals) {
-            // debug('eval > ', eval)
-            const field = req.body.code_fields.find(e => e.code == _eval)
-            if (field) {
-              // debug('match > ', field, `"{{${JSON.stringify(field.code).slice(1,-1)}}}"`)
-              json = String(json).replace(`"{{${JSON.stringify(field.code).slice(1,-1)}}}"`, JSON.stringify(field.value))
-              // debug('replace > ', json)
-            }
-          }
-        }
-      }
 
       config = JSON.parse(json)
       
@@ -2219,16 +2260,25 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         const data = new FormData()
 
         if (config.json) {
-          data.append('json', JSON.stringify(config.data))
+          data.append('json', JSON.stringify(config.data), {
+            contentType: 'application/json',
+          })
         } else {
           for (const field of fields) {
             if (field.valueFromEnv) continue
-            data.append(field.key, field.value)
+            if (field.key == 'code_fields') continue
+
+            const param = block.params.find(e => e.key == field.key) || {}
+
+            data.append(field.key, field.value, {
+              contentType: param.contentType,
+            })
           }
         }
         for (const file of req.files) {
           data.append(file.fieldname, file.buffer, {
-            filename: file.originalname
+            filename: file.originalname,
+            contentType: file.contentType,
           })
         }
         config.headers = {
@@ -2266,6 +2316,20 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
         r = {
           data: r
         }
+      } else if (block.responseType == 'blob') {
+        config.responseType = 'arraybuffer'
+
+        r = await external_axios(config)
+        const buffer = r.data
+
+        res.status(200)
+        res.set({
+          'Content-Disposition': r.headers.get('Content-Disposition'),
+          'Content-Type': r.headers.get('Content-Type'),
+          'Access-Control-Expose-Headers': 'Content-Disposition',
+        })
+        res.send(Buffer.from(buffer, 'binary').toString('base64'))
+        return
       } else {
         r = await external_axios(config)
       }
