@@ -56,7 +56,7 @@ const publish = (next) => {
     to(channel) {
       return {
         emit(name, opt) {
-          console.dir(opt, {depth: null})
+          process.env.DEBUG && console.dir(opt, {depth: null})
         }
       }
     }
@@ -2162,6 +2162,16 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
           }
         }
       }
+      
+      // ignore value from
+      req.body.code_fields = req.body.code_fields.filter(e => {
+        const valued = fields.find(ee => ee.key == e.code)
+        if (valued && valued.valueFromUserProperty) {
+          return false
+        }
+        return true
+      })
+
       // match code_fields then replacement
       for (const param of fields) {
         let _evals = json.match(/\{\{(.*?)\}\}/gm)
@@ -2239,6 +2249,7 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
 
       // do match for evals {{ CODE }}
 
+      debug('[request axios]', json)
       config = JSON.parse(json)
       
     } else if (_.isString(block.axios)) {

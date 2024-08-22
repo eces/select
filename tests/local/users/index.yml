@@ -15,7 +15,7 @@ pages:
       enabled: true
     actions:
       - type: http
-        modal: true
+        # modal: true
         axios: 
           url: "{{APP_AWS_URL}}/users/send"
           method: POST
@@ -23,16 +23,19 @@ pages:
             "userIds": [1,2,3]
             "name": "{{name}}"
             "mobile": "{{mobile}}"
+            "email": "{{email}}"
             "title": "title"
         params:
           - key: name
             valueFromSelectedRows: true
           - key: mobile
             valueFromSelectedRows: true
+          - key: email
+            valueFromUserProperty: "{{email}}"
           - key: APP_AWS_URL
             valueFromEnv: true
-        forEach: true
-        reloadAfterSubmit: true
+        # forEach: true
+        # reloadAfterSubmit: true
       # - type: http
       #   label: Download
       #   axios: 
@@ -65,7 +68,28 @@ pages:
             valueFromEnv: true
         # forEach: true
         # reloadAfterSubmit: true
-    
+    viewModal:
+      useColumn: name
+      blocks:
+        - type: http
+          name: 1
+          axios: 
+            url: "{{APP_AWS_URL}}/users/image"
+            params:
+              name: "{{name}}"
+            method: POST
+            methodType: GET
+          responseType: blob
+          display: image
+          style:
+            maxHeight: 300px
+            margin: 0 auto
+          params:
+            - key: APP_AWS_URL
+              valueFromEnv: true
+            - key: name
+              valueFromRow: name
+        
 - path: users/dormant
   blocks:
   - type: markdown
