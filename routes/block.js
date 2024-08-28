@@ -2192,6 +2192,12 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
                 json = String(json).replace(`{{${_eval}}}`, `{{${keyName}}}`)
                 continue
               }
+              // if eval is from param (autofix to .value)
+              const simple_value = fields.find(e => e.key == _eval.trim())
+              if (simple_value) {
+                continue
+              }
+
               const field = req.body.code_fields.find(e => {
                 return String(e.code).trim() == String(_eval).trim()
               })
