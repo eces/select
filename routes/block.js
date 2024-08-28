@@ -2164,13 +2164,15 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
       }
       
       // ignore value from
-      req.body.code_fields = req.body.code_fields.filter(e => {
-        const valued = fields.find(ee => ee.key == e.code)
-        if (valued && valued.valueFromUserProperty) {
-          return false
-        }
-        return true
-      })
+      if (_.isArray(req.body.code_fields)) {
+        req.body.code_fields = (req.body.code_fields || []).filter(e => {
+          const valued = fields.find(ee => ee.key == e.code)
+          if (valued && valued.valueFromUserProperty) {
+            return false
+          }
+          return true
+        })
+      }
 
       // match code_fields then replacement
       for (const param of fields) {
