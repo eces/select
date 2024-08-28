@@ -5,6 +5,33 @@ pages:
   #   content: >
   #     ## 7일 가입자 조회
   - type: http
+    name: Block Post Download
+    axios: 
+      url: "{{APP_AWS_URL}}/users/export"
+      method: POST
+    responseType: blob
+    filename: UserExport.xlsx
+    params:
+      - key: APP_AWS_URL
+        valueFromEnv: true
+      - key: purpose
+  
+  - type: http
+    name: Block Get Image
+    axios: 
+      url: "{{APP_AWS_URL}}/users/image"
+      method: POST
+      methodType: GET
+    responseType: blob
+    display: image
+    style:
+      maxHeight: 300px
+      margin: 0 auto
+    params:
+      - key: APP_AWS_URL
+        valueFromEnv: true
+  
+  - type: http
     sqlType: select
     name: LIST
     axios:
@@ -20,12 +47,14 @@ pages:
           url: "{{APP_AWS_URL}}/users/send"
           method: POST
           data:
+            memo: "{{memo}}"
             "userIds": [1,2,3]
-            "name": "{{name}}"
-            "mobile": "{{mobile}}"
+            "name": "{{name.value}}"
+            "mobile": "{{mobile.value}}"
             "email": "{{email}}"
             "title": "title"
         params:
+          - key: memo
           - key: name
             valueFromSelectedRows: true
           - key: mobile
@@ -92,12 +121,78 @@ pages:
         
 - path: users/dormant
   blocks:
-  - type: markdown
-    content: >
-      ## 휴면회원 조회
+  # - type: markdown
+  #   content: >
+  #     ## 휴면회원 조회
+  - type: http
+    axios:
+      method: POST
+      url: https://api.selectfromuser.com/sample-api/upload
+      headers: 
+        Content-Type: multipart/form-data
+    params:
+      - key: title
+        value: title
+      - key: file
+        format: file
+        id: multipartFileRequest
+    rowsPath: result
+    showResult: table
+    # showResult: template
+    # showResultTemplate: |
+    #   object_url: {{object_url}}
+    #   name: {{name}}
+    columns:
+      object_url:
+        format: image
+        copy: true
+      file:
+        hidden: true
+      name:
+        format: template
+        template: |
+          <a href="{{object_url}}" target="_blank">{{name}}</a>
+    responseFn: |
+      rows.name = rows.file.originalname    
     
 - path: users/promotion
   blocks:
-  - type: markdown
-    content: >
-      ## 동의/미동의 조회
+  # - type: markdown
+  #   content: >
+  #     ## 동의/미동의 조회
+  - type: http
+    axios:
+      method: GET
+      url: https://api.selectfromuser.com/sample-api/products
+    rowsPath: rows
+    columns:
+      id:
+        openModal: modal1-:id
+    modals:
+      - path: modal1-:id
+        blocks:
+        - type: http
+          axios:
+            method: GET
+            url: https://api.selectfromuser.com/sample-api/products        
+          rowsPath: rows
+          display: form
+          columns:
+            id:
+              editable: true
+            name: 
+              editable: true
+          updateOptions:
+            type: http
+            axios:
+              method: POST
+              url: https://httpbin.selectfromuser.com/anything
+              # <<: *commonApiHeader
+              data:
+              year: '{{year}}'
+            confirm: false
+            request: |
+              const year = params.find(e ==> e.key == 'year')
+              const _year = _params.find(e ==> e.key == 'year')
+
+              year.value = _year.value
