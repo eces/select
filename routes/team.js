@@ -249,6 +249,11 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
       if (!block) return block
       if (block.type == 'query') return clean_table_block(clean_sql(block))
       if (block.type == 'http') return clean_table_block(clean_http(block))
+      if (['left', 'right', 'center', 'top', 'bottom'].includes(block.type)) {
+        if (block.blocks) {
+          block.blocks = block.blocks.map(clean_block)
+        }
+      }
       return clean_table_block(block)
     }
     if (json.pages) {
