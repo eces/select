@@ -10,7 +10,7 @@ pages:
       url: "{{APP_AWS_URL}}/users/export"
       method: POST
     responseType: blob
-    filename: UserExport.xlsx
+    filename: UserExport-{{purpose}}.xlsx
     params:
       - key: APP_AWS_URL
         valueFromEnv: true
@@ -24,6 +24,10 @@ pages:
       methodType: GET
     responseType: blob
     display: image
+    template: |
+      <a href="#" target="_blank">
+        <img src="{{src}}" />
+      </a>
     style:
       maxHeight: 300px
       margin: 0 auto
