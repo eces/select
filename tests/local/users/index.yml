@@ -160,39 +160,63 @@ pages:
   # - type: markdown
   #   content: >
   #     ## 동의/미동의 조회
-  - type: http
-    axios:
-      method: GET
-      url: https://api.selectfromuser.com/sample-api/products
-    rowsPath: rows
-    columns:
-      id:
-        openModal: modal1-:id
-    modals:
-      - path: modal1-:id
-        blocks:
-        - type: http
-          axios:
-            method: GET
-            url: https://api.selectfromuser.com/sample-api/products        
-          rowsPath: rows
-          display: form
-          columns:
-            id:
-              editable: true
-            name: 
-              editable: true
-          updateOptions:
-            type: http
-            axios:
-              method: POST
-              url: https://httpbin.selectfromuser.com/anything
-              # <<: *commonApiHeader
-              data:
-              year: '{{year}}'
-            confirm: false
-            request: |
-              const year = params.find(e ==> e.key == 'year')
-              const _year = _params.find(e ==> e.key == 'year')
 
-              year.value = _year.value
+  # - type: http
+  #   axios:
+  #     method: GET
+  #     url: https://api.selectfromuser.com/sample-api/products
+  #   rowsPath: rows
+  #   columns:
+  #     id:
+  #       openModal: modal1-:id
+  #   modals:
+  #     - path: modal1-:id
+  #       blocks:
+  #       - type: http
+  #         axios:
+  #           method: GET
+  #           url: https://api.selectfromuser.com/sample-api/products        
+  #         rowsPath: rows
+  #         display: form
+  #         columns:
+  #           id:
+  #             editable: true
+  #           name: 
+  #             editable: true
+  #         updateOptions:
+  #           type: http
+  #           axios:
+  #             method: POST
+  #             url: https://httpbin.selectfromuser.com/anything
+  #             # <<: *commonApiHeader
+  #             data:
+  #             year: '{{year}}'
+  #           confirm: false
+  #           request: |
+  #             const year = params.find(e ==> e.key == 'year')
+  #             const _year = _params.find(e ==> e.key == 'year')
+
+  #             year.value = _year.value
+
+  - type: top
+    blocks:
+      - type: http
+        axios:
+          method: POST
+          url: https://httpbin.selectfromuser.com/anything              
+          params:
+            keyword: '{{keyword || null}}' # 치환이 동작하지 않음 스트링 문자열그대로 반환됨
+        params:
+        - key: keyword
+        roles:
+          edit:
+            - email::jhlee@selectfromuser.com~~~~~
+
+  # - type: http
+  #   axios:
+  #     method: POST
+  #     url: https://httpbin.selectfromuser.com/anything      
+  #     params:
+  #       keyword: '{{keyword2 || null}}' 
+  #   params:
+  #   - key: keyword2

@@ -12,6 +12,13 @@ const router = require('express').Router()
 const { Parser } = require('node-sql-parser')
 const parser = new Parser
 
+const axios = require('axios')
+const $http = axios.create({
+  withCredentials: false,
+  timeout: 30000,
+  baseURL: global.__API_BASE,
+})
+
 router.use((req, res, next) => {
   req._json = true
   next()
@@ -272,12 +279,62 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
         }))
       })
       const flatten_menus = _.flatten(_.flatten([].concat(menus, json.menus)))
+      
+      // update UserRole
+      const refresh_role = async () => {
+        try {
+          const r = await $http({
+            method: 'GET',
+            url: '/cli/UserRole/get',
+            params: {
+              user_id: req.session.id,
+            },
+            headers: {
+              Authorization: `${process.env.TOKEN}`,
+            },
+            json: true,
+          })
+          if (r.data?.message != 'ok') throw new Error('Network Error')
+          
+          const roles = []
+          if (r.data.roles[0]) {
+            roles.push(`select::${r.data.roles[0].name}`)
+            if (r.data.roles[0].group_json) {
+              roles.push(...r.data.roles[0].group_json)
+            }
+          }
+          roles.push(`email::${r.data.user.email}`)
+
+          r.data.roles = roles
+
+          global.__USER_ROLES[req.session.id] = r.data
+          return
+        } catch (error) {
+          console.log('Failed to fetch UserRole')
+        }
+      }
+
+      if (!global.__USER_ROLES) global.__USER_ROLES = {}
+      if (global.__USER_ROLES[req.session.id]) {
+        setTimeout(refresh_role, 1000)
+      } else {
+        await refresh_role()
+      }
+
+      json.users = [
+        {
+          ...global.__USER_ROLES[req.session.id].user,
+          user: global.__USER_ROLES[req.session.id].user,
+          roles: global.__USER_ROLES[req.session.id].roles,
+        }
+      ]
+      
       json.pages = json.pages.map(page => {
         if (page && page.path) {
           const menu = flatten_menus.find(e => e.path == page.path)
           if (menu && menu.roles) {
             const r = _.flatten([menu.roles.view])
-            if (_.intersection(r, json.users[0].roles).length === 0) {
+            if (_.intersection(r, global.__USER_ROLES[req.session.id].roles).length === 0) {
               page.blocks = []
             }
           }

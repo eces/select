@@ -33,6 +33,43 @@ menus:
   path: users/promotion
   placement: tab-only
 
+- group: 대시보드
+  name: 대시보드
+  path: dashboard
+  placement: menu-only
+  icon: mdi-monitor-dashboard
+  roles:
+    list:
+      # - email::jhlee@selectfromuser.com
+      - Employee
+    view:
+      # - email::jhlee@selectfromuser.com
+      - Employee
+- group: 메시지
+  name: 메시지
+  path: message
+  placement: expand-only
+  icon: mdi-email
+  roles:
+    list:
+      - email::jhlee@selectfromuser.com
+      - Employee_else
+    view:
+      - email::jhlee@selectfromuser.com
+      - Employee_else
+  menus:
+  - path: message/A
+    name: Menu A
+  - path: message/B
+    name: Menu B
+    roles:
+      list:
+        # - email::jhlee@selectfromuser.com
+        - Employee
+      view:
+        # - email::jhlee@selectfromuser.com
+        - Employee_else
+
 - group: 기타메뉴
   name: 공식 문서 
   path: https://docs.selectfromuser.com
@@ -70,3 +107,9 @@ menus:
 # keys:
 # - name: AWS_URL
 #   value: http://localhost:9300
+
+pages:
+- path: message/B
+  blocks:
+  - type: markdown
+    content: Text
