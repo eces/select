@@ -54,6 +54,19 @@ const refresh_team_config = async (team_id) => {
 			ignore: 'node_modules/**',
 		})
 
+		let global_row
+		for (const path of files) {
+			const filename = path.split('/').slice(-1)[0]
+			if (['global.yml', 'global.yaml'].includes(filename)) {
+				global_row = {
+					id: path,
+					json: {
+						yml: fs.readFileSync(path),
+					},
+				}
+			}	
+		}
+
 		const config = {}
 		sorted_rows = files || []
 		sorted_rows.sort()
@@ -80,6 +93,9 @@ const refresh_team_config = async (team_id) => {
 					}
 				}
 				row.json.yml = fs.readFileSync(path)
+				if (global_row && global_row.json && global_row.id != path) {
+					row.json.yml = `${global_row.json.yml || ''}\n\n${row.json.yml || ''}`
+				}
 				// const parsed = YAML.load(row.json.yml || '') || {}
 				const docs = YAML.loadAll(row.json.yml || '') || []
 				for (const parsed of docs) {
