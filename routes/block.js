@@ -720,11 +720,7 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
           }
         }
         else if (valueFromUserProperty == '{{name}}') {
-          let name = req.user_role.profile_name
-          if (!name) {
-            const me = req.session.name
-            name = me.name
-          }
+          let name = req.user_role.profile_name || req.session.name
           found = {
             value: name,
           }
@@ -2115,11 +2111,7 @@ router.post('/http', [only.id(), only.menu(), upload.any(), only.expiration()], 
               }
             }
             else if (valueFromUserProperty == '{{name}}') {
-              let name = req.user_role.profile_name
-              if (!name) {
-                const me = req.session.name
-                name = me.name
-              }
+              let name = req.user_role.profile_name || req.session.name
               found = {
                 value: name,
               }

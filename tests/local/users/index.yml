@@ -167,9 +167,36 @@ pages:
 
   - type: http
     axios:
+      method: POST
+      url: https://httpbin.selectfromuser.com/anything
+      params:
+        id: "{{id}}"
+        email: "{{email}}"
+        name: "{{name}}"
+    params:
+      - key: id
+        valueFromUserProperty: "{{id}}"
+      - key: email
+        valueFromUserProperty: "{{email}}"
+      - key: name
+        valueFromUserProperty: "{{name}}"
+
+  - type: http
+    axios:
       method: GET
       # url: https://api.selectfromuser.com/sample-api/products
       url: *apiProducts
+      params:
+        id: "{{id}}"
+        email: "{{email}}"
+        name: "{{name}}"
+    params:
+      - key: id
+        valueFromUserProperty: "{{id}}"
+      - key: email
+        valueFromUserProperty: "{{email}}"
+      - key: name
+        valueFromUserProperty: "{{name}}"
     # selectOptions:
     #   enabled: true
     # actions:
