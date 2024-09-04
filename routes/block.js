@@ -714,6 +714,11 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
             value: req.session.email
           }
         }
+        else if (valueFromUserProperty == '{{id}}') {
+          found = {
+            value: req.session.id
+          }
+        }
         else if (valueFromUserProperty == '{{name}}') {
           let name = req.user_role.profile_name
           if (!name) {
