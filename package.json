@@ -39,7 +39,7 @@
     "dotenv": "^16.3.1",
     "errorhandler": "^1.5.0",
     "excel-date-to-js": "^1.1.4",
-    "express": "^4.16.4",
+    "express": "^4.20.0",
     "express-subdomain": "^1.0.5",
     "form-data": "^4.0.0",
     "generic-pool": "^3.9.0",
