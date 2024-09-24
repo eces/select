@@ -343,6 +343,21 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
       })
     }
 
+    const clean_yaml_id = (e) => {
+      e._id = undefined
+      e._idx = undefined
+      return e
+    }
+    json.menus = json.menus.map(clean_yaml_id)
+    json.pages = json.pages.map(clean_yaml_id)
+
+    const team_env_config = req.team.env_config || {}
+    if (team_env_config.modes) {
+      team_env_config.modes = team_env_config.modes.filter(e => {
+        return e.mode == (req.query.mode || "production")
+      })
+    }
+
     // hide
     json.resources = []
   
@@ -353,7 +368,7 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
       team_domain: req.team.domain,
       team_flag_config: req.team.flag_config || {},
       team_plan: req.team.plan || '',
-      team_env_config: req.team.env_config || {},
+      team_env_config,
       // team_apply_date: billing_method.apply_date,
       'select-configuration': json,
       yml: String(cached_json || '').trim().length, // sample 체크에만 쓰는중
