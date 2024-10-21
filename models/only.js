@@ -339,7 +339,9 @@ const expiration = () => {
       }
 
       const mode = req.get('user-mode') || 'production'
-      if (team.env_config.ip_cidr_enabled && team.env_config.ip_cidr && team.env_config.ip_cidr.length) {
+      if (team.env_config.ip_cidr_enabled && team.env_config.ip_cidr && team.env_config.ip_cidr.length
+        && mode != 'local'
+      ) {
         const ip = req.ip
         let accepted = false
         for (const policy of team.env_config.ip_cidr) {
