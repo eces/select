@@ -300,7 +300,7 @@ const hash = () => {
 const expiration = () => {
   return async function (req, res, next) {
     try {
-      const tid = String(req.query.admin_domain)
+      const tid = String(req.query.admin_domain || req.team.id)
       let team = {}
       {
         const r = await $http({
@@ -338,7 +338,7 @@ const expiration = () => {
         throw StatusError(400, 'session_max_expiration')
       }
 
-      const mode = req.get('user-mode') || 'production'
+      const mode = req.get('user-mode') || req.query.mode || 'production'
       if (team.env_config.ip_cidr_enabled && team.env_config.ip_cidr && team.env_config.ip_cidr.length
         && mode != 'local'
       ) {

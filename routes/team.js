@@ -29,7 +29,7 @@ router.param('admin_domain_or_team_id', (req, res, next) => {
   next()
 })
 
-router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of('view', 'edit', 'admin')], async (req, res, next) => {
+router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of('view', 'edit', 'admin'), only.expiration()], async (req, res, next) => {
   try {
     // const master = await getConnection('mysql.master')
 
