@@ -5,3 +5,14 @@
 
 - Updated config menu to hide login metadata (auth methods) when restricted by IP policy
 - Config menu always visible when accessed from a local environment, regardless of IP policy
+
+
+----
+
+과거 변경내역은 아래 블로그에서 확인하실 수 있습니다.
+
+You can check the past change history on the blog below.
+
+https://blog.selectfromuser.com/tag/update/
+
+https://www.selectfromuser.com/changelog
