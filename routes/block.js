@@ -29,6 +29,9 @@ const {google} = require('googleapis')
 const moment = require('moment')
 const { getExcelDateFromJs } = require('excel-date-to-js')
 
+// patch: sqlWith support moment
+alasql.fn.moment = moment
+
 // const ivm = require('isolated-vm');
 
 const router = require('express').Router()
