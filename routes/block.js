@@ -810,7 +810,7 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
           }
           for (const key in block.json) {
             if (!alasql.databases[namespace].tables[key]) {
-              master_resource.exec(`CREATE TABLE ${key}`)
+              master_resource.exec(`CREATE TABLE IF NOT EXISTS ${key}`)
               alasql.databases[namespace].tables[key].data = block.json[key]
             }
           }
@@ -833,15 +833,17 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
           const table = sql.name
           
           const url = `https://docs.google.com/spreadsheets/d/${sql.id}/export?format=csv&gid=${sql.gid || 0}`
-          let q = await alasql.promise(`SELECT * FROM CSV(?,{headers:true})`, [url])
-          // google response was ascii but utf8
-          q = JSON.parse(Buffer.from(JSON.stringify(q), 'ascii').toString('utf8'))
+          const q = await alasql.promise(`SELECT * FROM CSV(?,{headers:true})`, [url])
+          // cloud: utf8Bom:true, raw:true
+          // patch: google response was ascii but utf8
           if (q && q[0] && String(Object.keys(q[0])[0]).startsWith('<!DOCTYPE html>')) {
             throw new Error('no data in google sheets.')
           }
-
-          master_resource.exec(`CREATE TABLE ${table}`)
-          alasql.databases[`${team_id}`].tables[table].data = q
+          let json = Buffer.from(JSON.stringify(q), sql.encoding || 'latin1').toString('utf-8')
+          json = JSON.parse(json)
+          
+          master_resource.exec(`CREATE TABLE IF NOT EXISTS ${table}`)
+          alasql.databases[`${team_id}`].tables[table].data = json
           
           logger.emit('query source', {
             team_id, 
@@ -909,7 +911,7 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
           }
           
           const table = sql.name
-          master_resource.exec(`CREATE TABLE ${table}`)
+          master_resource.exec(`CREATE TABLE IF NOT EXISTS ${table}`)
           alasql.databases[`${team_id}`].tables[table].data = q
           // // Method 1
           // alasql.tables.one.data = data;
