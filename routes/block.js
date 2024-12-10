@@ -648,6 +648,19 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
       }
     }
 
+    // patch: mapFirstValue query1
+    for (const field of fields) {
+      if (field.mapFirstValue) {
+        field.values = field.values && field.values.length === 0 ? undefined : field.values
+        fields.push(Object.assign({}, field, {
+          key: field.key + '1',
+          value: (field.values || [])[0] || '',
+          values: undefined,
+          // prevent loop
+          mapFirstValue: undefined,
+        }))
+      }
+    }
 
     // 지금 기준 role 가져오고 (yml > db), 지금 기준 menu Role이랑 비교하고 차단
     // menus.roles / blocks.roles / actions.roles
