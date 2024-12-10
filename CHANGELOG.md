@@ -1,3 +1,8 @@
+## `2.3.12` 2024-12-10
+
+- patch: mapFirstValue 
+- patch: sqlWith support momentjs
+
 ## `2.3.11` 2024-10-21
 
 - IP 정책으로 허용되지 않는 경우 로그인 메타데이터(auth methods)를 포함한 메뉴(config)를 노출하지 않도록 수정
