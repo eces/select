@@ -348,8 +348,8 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
       e._idx = undefined
       return e
     }
-    json.menus = json.menus.map(clean_yaml_id)
-    json.pages = json.pages.map(clean_yaml_id)
+    json.menus = (json.menus || []).map(clean_yaml_id)
+    json.pages = (json.pages || []).map(clean_yaml_id)
 
     const team_env_config = req.team.env_config || {}
     if (team_env_config.modes) {
