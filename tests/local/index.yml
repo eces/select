@@ -84,18 +84,19 @@ menus:
   icon: mdi-tab
   iconEnd: 링크
 
-# resources:
-# - name: mysql.dev
-#   mode: local
-#   type: mysql
-#   host: aaaa.ap-northeast-2.rds.amazonaws.com
-#   port: 3306
-#   username: user_aaaa
-#   password: aaaa
-#   database: aaaa
-#   timezone: '+00:00'
-#   extra:
-#     charset: utf8mb4_general_ci
+resources:
+- 
+  name: mysql.qa
+  type: mysql
+  host: $DB_HOST
+  port: $DB_PORT
+  username: $DB_USER
+  password: $DB_PASSWORD
+  database: $DB_NAME
+  timezone: '+00:00'
+  extra:
+    charset: utf8mb4_general_ci
+
 
 # pages:
 # - path: healthcheck/db
@@ -113,3 +114,4 @@ pages:
   blocks:
   - type: markdown
     content: Text
+

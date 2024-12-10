@@ -1,0 +1,100 @@
+menus:
+- path: pages/ZujJYg
+  name: 새로운 메뉴
+pages:
+- path: pages/ZujJYg
+  title: 제목
+  subtitle: 내용
+  blocks:
+  # - type: query
+  #   resource: sqlWith
+
+  #   sqlWith:
+  #   - name: p1
+  #     resource: mysql.qa
+  #     # delay: 3000
+  #     query: >
+  #       SELECT * FROM test_10k LIMIT 100
+
+  #   - name: p2
+  #     resource: mysql.qa
+  #     query: >
+  #       SELECT * FROM wine_stock
+      
+  #   sqlType: select
+  #   sql: >
+  #     SELECT 
+  #       p1.id, 
+  #       p1.name AS `mysql name`, 
+  #       p2.name AS `pgsql name`
+  #     FROM p1 LEFT JOIN p2 ON p1.id = p2.id
+
+  # - type: query
+  #   resource: mysql.qa
+  #   sqlType: select    
+  #   sql: >
+  #     SELECT 
+  #       DATE_FORMAT(created_at, '%Y-%m-%d') as 'date',
+  #       CONCAT(COUNT(id), ' 건') AS count_order,
+  #       CONCAT(SUM(amount), ' 원') AS sum_order_amount,
+  #       CONCAT('취소 ', COUNT(IF(status = 'cancel', id, NULL)), ' 건') AS count_order_cancel
+  #     FROM orders
+  #     WHERE created_at BETWEEN :calendar1 AND :calendar2
+  #     GROUP BY 1
+  #   params:
+  #     - key: calendar
+  #       range: true
+  #       valueFromCalendar: true
+  #   display: calendar
+  #   autoload: true    
+  #   cache: true
+  #   columns:
+  #     count_order: 
+  #       label: 총 주문수
+  #       color: blue-600
+  #       formatFn: numberPart
+  #     sum_order_amount: 
+  #       label: 주문금액 합계
+  #       color: green-600        
+  #       formatFn: numberPart
+  #       openModal: order-list
+  #     count_order_cancel: 
+  #       label: 취소수량
+  #       color: gray-500
+  
+  - type: query
+    resource: sqlWith
+
+    sqlWith:
+    - name: p2
+      resource: mysql.qa
+      query: >
+        SELECT * FROM wine_stock WHERE deleted_at IS NOT NULL
+      
+    sqlType: select
+    sql: >
+      SELECT moment(deleted_at).format('YYYY-MM-DD') as date, name as name FROM p2
+
+    # sql: >
+    #   SELECT deleted_at as date, name as name FROM p2
+    
+    
+    params:
+      - key: calendar
+        range: true
+        valueFromCalendar: true
+    display: calendar
+    autoload: true    
+    # cache: true
+
+    columns:
+      name:
+        label: 일시품절기간
+
+    # responseFn: |
+    #   rows = rows.map(e => {
+    #     e.date = moment(e.date).format('YYYY-MM-DD')
+    #     return e
+    #   })
+    #   console.log(rows)
+    #   return rows
