@@ -833,8 +833,9 @@ router.post('/query', [only.hash(), only.id(), only.menu(), only.expiration()], 
           const table = sql.name
           
           const url = `https://docs.google.com/spreadsheets/d/${sql.id}/export?format=csv&gid=${sql.gid || 0}`
-          const q = await alasql.promise(`SELECT * FROM CSV(?,{headers:true})`, [url])
-          // debug('>>>>>>>q sheet', q)
+          let q = await alasql.promise(`SELECT * FROM CSV(?,{headers:true})`, [url])
+          // google response was ascii but utf8
+          q = JSON.parse(Buffer.from(JSON.stringify(q), 'ascii').toString('utf8'))
           if (q && q[0] && String(Object.keys(q[0])[0]).startsWith('<!DOCTYPE html>')) {
             throw new Error('no data in google sheets.')
           }

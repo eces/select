@@ -1,6 +1,6 @@
 {
   "name": "selectfromuser",
-  "version": "2.3.13",
+  "version": "2.3.14",
   "description": "A tool for admin/backoffice UI using YAML with SQL, RESTful API connectivity.",
   "main": "cli.dist.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "package.json"
   ],
   "dependencies": {
-    "alasql": "^4.1.7",
+    "alasql": "^4.6.0",
     "atob": "^2.1.2",
     "axios": "^1.5.1",
     "boxen": "^7.1.1",
