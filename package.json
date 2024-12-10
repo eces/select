@@ -1,6 +1,6 @@
 {
   "name": "selectfromuser",
-  "version": "2.3.11",
+  "version": "2.3.12",
   "description": "A tool for admin/backoffice UI using YAML with SQL, RESTful API connectivity.",
   "main": "cli.dist.js",
   "scripts": {
