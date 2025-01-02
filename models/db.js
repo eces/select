@@ -64,7 +64,7 @@ module.exports.init_team_resource = async (team_id) => {
         name: rows[idx].name,
         json: rows[idx],
       }
-      if (!['mysql', 'mssql', 'postgres', 'mongodb', 'redis'].includes(row.json && row.json.type)) continue
+      if (!['mysql', 'mssql', 'postgres', 'mongodb', 'redis', 'oracle'].includes(row.json && row.json.type)) continue
 
       // filter region
       // const current_region = region[row.json.mode || 'production'] || 'seoul'
