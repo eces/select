@@ -1,0 +1,522 @@
+#!/usr/bin/env node
+
+
+/**
+ * @license
+ * Copyright(c) 2021-2023 Selectfromuser Inc.
+ * All rights reserved.
+ * https://www.selectfromuser.com
+ * {team, support, jhlee}@selectfromuser.com, eces92@gmail.com
+ * Commercial Licensed. Grant use for paid permitted user only.
+ */
+
+require('dotenv').config()
+
+global.__API_BASE = process.env.__SELECT_BUILD ? 'https://api.selectfromuser.com' : 'http://localhost:9500'
+const WEB_BASE = process.env.__SELECT_BUILD ? 'https://app.selectfromuser.com' : 'http://localhost:5173'
+const WEB_BASE_DOMAIN = process.env.__SELECT_BUILD ? 'https://{{DOMAIN}}-local.selectfromuser.com' : 'http://{{DOMAIN}}-local.localhost:5173'
+
+const { program } = require('commander');
+const chalk = require('chalk')
+const ___package = require('./package.json')
+const inquirer = require('inquirer');
+
+const axios = require('axios')
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const {glob} = require('glob')
+
+// setTimeout(async () => {
+//   try {
+//     const boxen = (await import('boxen')).default
+//     const chalk = require('chalk')
+//     const pj = (await import('package-json')).default
+//     const latest = await pj('selectfromuser')
+// 		const semver = require('semver')
+//     if (semver.lt(___package.version, latest.version)) {
+//       console.log(boxen(`Update available ${___package.version} -> ${ chalk.bold(latest.version)}\nRun ${ chalk.cyan('npm i -g selectfromuser') } to update`, {
+//         padding: 1,
+//         margin: 1,
+//         borderColor: 'green',
+//         // textAlignment: 'center',
+//         title: 'NEW',
+//         titleAlignment: 'center',
+//       }))
+//     }
+//   } catch (error) {
+//     console.error(error)
+//   }
+// }, 0)
+
+if (process.argv.length == 2) {
+  process.argv.push('dev')
+}
+
+program
+.name('selectfromuser')
+.version(___package.version, '-v, --version, -version')
+// .option('-w, --watch, -watch', 'watch config yaml files')
+// .option('-f, --force, -force', 'force create config yaml')
+
+program.command('logout').action(() => {
+  let config_path = path.join(process.env.CWD || process.cwd(), '.select')
+  
+  if (!fs.existsSync(config_path)) {
+    fs.mkdirSync(config_path)
+  }
+  let config = {}
+  if (fs.existsSync(path.join(config_path, 'project.json'))) {
+    config = require(path.join(config_path, 'project.json'))
+  }
+  if (!config.token) {
+    return console.log(chalk.blue('[INFO]'), 'Logged out. (no changes)')  
+  }
+  config.token = undefined
+
+  fs.writeFileSync(path.join(config_path, 'project.json'), 
+    JSON.stringify(config, null, '  ')
+  )
+  console.log(chalk.blue('[INFO]'), 'Logged out.')
+})
+program.command('whoami').action(async () => {
+  console.log(chalk.bgGreen.white(' selectfromuser.com '))
+  try {
+    let config_path = path.join(process.env.CWD || process.cwd(), '.select')
+  
+    if (!fs.existsSync(config_path)) {
+      fs.mkdirSync(config_path)
+    }
+    let config = {}
+    if (fs.existsSync(path.join(config_path, 'project.json'))) {
+      config = require(path.join(config_path, 'project.json'))
+    }
+    if (!config.token) {
+      return console.log(chalk.blue('[INFO]'), 'Not logged in.')  
+    }
+
+    const r = await axios({
+      method: 'get',
+      url: global.__API_BASE + '/cli/whoami',
+      headers: {
+        Authorization: `${config.token}`,
+      },
+      json: true,
+    })
+
+    console.log(JSON.stringify(r.data, null, '  '))
+  } catch (error) {
+    console.error(chalk.red('[ERROR]'), error.message)
+  }
+})
+program.command('login').action(() => {
+  console.log(chalk.bgGreen.white(' selectfromuser.com '))
+  console.log('login')
+  login()
+})
+program.command('link').action(() => {
+  console.log(chalk.bgGreen.white(' selectfromuser.com '))
+  
+  const config_path = path.join(process.env.CWD || process.cwd(), '.select', 'project.json')
+  console.log('Using token and configuration from', config_path)
+  console.log('')
+  
+  link()
+})
+program.command('unlink').action(() => {
+  let config_path = path.join(process.env.CWD || process.cwd(), '.select')
+  
+  if (!fs.existsSync(config_path)) {
+    fs.mkdirSync(config_path)
+  }
+  let config = {}
+  if (fs.existsSync(path.join(config_path, 'project.json'))) {
+    config = require(path.join(config_path, 'project.json'))
+  }
+  if (!config.team_id) {
+    return console.log(chalk.blue('[INFO]'), 'Project has been unlinked. (no changes)')  
+  }
+  config.team_id = undefined
+
+  fs.writeFileSync(path.join(config_path, 'project.json'), 
+    JSON.stringify(config, null, '  ')
+  )
+  console.log(chalk.blue('[INFO]'), 'Project has been unlinked.')
+})
+program.command('dev').action(() => {
+  console.log(chalk.bgGreen.white(' selectfromuser.com '))
+  // console.log('dev')
+  dev()
+})
+program.command('init').action(() => {
+  // console.log(chalk.bgGreen.white(' selectfromuser.com '))
+  init()
+})
+
+
+
+const parsed = program.parse()
+const commands = parsed.args
+const opts = program.opts()
+	
+
+
+
+async function login() {
+  // console.log('Trying to sign in...')
+
+  const requestAuth = `${global.__API_BASE}/cli/request-auth`
+  try {
+    const r = await axios.get(requestAuth, {
+      params: {
+        hostname: os.hostname(),
+      },
+      json: true,
+    })
+    const auth_token = r.data?.auth_token
+    
+    // const cloud = `https://app.selectfromuser.com`
+    const cloud = `${WEB_BASE}/login`
+    const url = cloud + `?auth=${auth_token}&cli=1`
+    console.log('Follow this link to complete sign in:\n  ', chalk.underline(url))
+
+    const open = require('open')
+
+    await open(url)
+
+    console.log('')
+    console.log(chalk.blue('[INFO]'), 'Waiting to finish sign in ...')
+
+    let count = 0
+
+    async function check () {
+
+      if (++count > 300) {
+        console.log('')
+        return console.log(chalk.blue('[INFO]'), 'Session expired. Please retry.')
+      }
+      // console.log('>', {auth_token})
+
+      let token, team_id
+      
+      try {
+        // console.log('>>>>33', path + '/finish')
+        const r = await axios.get(requestAuth + '/finish?auth_token=' + auth_token, {
+          json: true,
+        })
+        // console.log('>>>>55')
+        if (r.data?.message == '401') {
+          process.stdout.write('.')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          await check()
+          return
+        }
+
+        if (r.data?.message != 'ok') throw new Error(r.data?.message)
+  
+        if (!r.data.token) {
+          console.log('.')
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          await check()
+          return
+        }        
+
+        token = r.data.token
+        // team_id = r.data.team_id
+
+      } catch (error) {
+        console.error(error.message)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        await check()
+        return
+      }
+
+      // done!
+
+      const config_path = path.join(process.env.CWD || process.cwd(), '.select')
+          
+      if (!fs.existsSync(config_path)) {
+        fs.mkdirSync(config_path)
+      }
+      fs.writeFileSync(path.join(config_path, 'project.json'), 
+      JSON.stringify({
+        // team_id,
+        token,
+      }, null, '  ')
+      )
+      console.log('')
+      console.log(chalk.blue('[INFO]'), 'Sign in completed.')
+      
+      const gitignore = path.join(process.env.CWD || process.cwd(), '.gitignore')
+      if (fs.existsSync(gitignore)) {
+        const data = fs.readFileSync(gitignore)
+        if (data.toString().split('\n').map(e => String(e).trim()).filter(e => e == '.select').length == 0) {
+          fs.appendFileSync(gitignore, '\n.select')
+        }
+      }
+    }
+
+    await check()
+  } catch (error) {
+    console.error('Cannot process your login request. Please retry.')
+    console.error(chalk.red('[ERROR]'), error.message)
+    return process.exit()
+  }
+}
+
+async function link() {
+  try {
+    const config_path = path.join(process.env.CWD || process.cwd(), '.select', 'project.json')
+    // console.log('Using token and configuration from', config_path)
+    // console.log('')
+    if (!fs.existsSync(config_path)) {
+      console.log(chalk.blue('[INFO]'), 'Please sign in to your team.')
+      console.log('')
+      await login()
+      // console.log('config not found >> try init?')
+      // return
+    }
+    
+    const config = require(config_path)
+    // console.log("config", config)
+    
+    process.env.TOKEN = config.token || ''
+    process.env.TEAM_ID = config.team_id || ''
+    process.env.SELFHOST = true
+
+    // console.log('process.env.TEAM_ID', process.env.TEAM_ID, !process.env.TEAM_ID)
+    
+    if (!process.env.TEAM_ID) {
+      // create or link team
+      console.log(chalk.blue('[INFO]'), 'Please link this project to your team or create a new team.')
+
+      const answer = await inquirer.prompt([
+        {
+          name: 'team_id',
+          message: 'Project ID',
+          default: 'Enter to create new',
+        }
+      ])
+      if (answer.team_id == 'Enter to create new') {
+        // create new
+        // answer.team_id = 'NEW'
+        const { customAlphabet } = require('nanoid')
+        const nanoidS = customAlphabet('0123456789abcdef')
+
+        const r = await inquirer.prompt([
+          {
+            name: 'name',
+            message: 'Project name',
+            default: `Project from ${os.hostname()}`,
+          },
+          {
+            name: 'domain',
+            message: 'Project domain',
+            default: nanoidS(12),
+          },
+        ])
+        // answer.team_name = r.name
+
+        const r2 = await axios({
+          method: 'post',
+          url: global.__API_BASE + '/cli/project',
+          data: {
+            name: r.name,
+            domain: r.domain,
+          },
+          headers: {
+            Authorization: `${config.token}`,
+          },
+          json: true,
+        })
+        if (r2?.data?.message != 'ok') {
+          console.log(r2.data)
+          throw new Error(`Failed to create project: ${r?.data?.message || '(unknown error)'}`)
+        }
+        answer.team_id = r2.data.team_id
+      } else {
+
+      }
+      // console.log({answer})
+
+      const r = await axios({
+        method: 'post',
+        url: global.__API_BASE + '/cli/link',
+        data: {
+          team_id: answer.team_id,
+        },
+        headers: {
+          Authorization: `${config.token}`,
+        },
+        json: true,
+      })
+      
+      // console.log('>>>>55', r.data)
+      if (r.data?.message != 'ok') {
+        throw new Error(r.data.message)
+      }
+
+      config.token = r.data.token
+      config.team_id = answer.team_id
+      fs.writeFileSync(config_path, JSON.stringify(config, null, '  '))
+
+      console.log(chalk.blue('[INFO]'), 'This project has been linked to cloud team.')
+      
+      // return
+    }
+
+
+  } catch (error) {
+    console.error(chalk.red('[ERROR]'), error.message)
+    console.debug(error.stack)
+    return false
+  }  
+}  
+
+async function dev() {
+  try {
+    const config_path = path.join(process.env.CWD || process.cwd(), '.select', 'project.json')
+    // console.log('Using token and configuration from', config_path)
+    // console.log('')
+    if (!process.env.TOKEN && !fs.existsSync(config_path)) {
+      console.log(chalk.blue('[INFO]'), 'Please sign in to your team.')
+      console.log('')
+      await login()
+      // console.log('config not found >> try init?')
+      // return
+    }
+    
+    const require_or_env = (config_path) => {
+      if (process.env.TOKEN && process.env.TEAM_ID) {
+        return {
+          token: process.env.TOKEN,
+          team_id: process.env.TEAM_ID,
+        }
+      } else {
+        return require(config_path)
+      }
+    }
+
+    let config = require_or_env(config_path)
+    if (!config.token) {
+      console.log(chalk.blue('[INFO]'), 'Please sign in to your team.')
+      console.log('')
+      await login()
+    }
+    
+    process.env.TOKEN = config.token || ''
+    process.env.TEAM_ID = config.team_id || ''
+    // console.log("config", config)
+    
+    process.env.SELFHOST = true
+
+    // console.log('process.env.TEAM_ID', process.env.TEAM_ID, !process.env.TEAM_ID)
+    config = require_or_env(config_path)
+    if (!process.env.TEAM_ID) {
+      const r = await link()
+      if (r === false) {
+        console.log('abort: run dev')
+        return
+      }
+    }
+
+
+    const r = await axios({
+      method: 'get',
+      url: global.__API_BASE + '/cli/link',
+      headers: {
+        Authorization: `${config.token}`,
+      },
+      json: true,
+    })
+    if (r.data?.message != 'ok') {
+      if (['jwt malformed', 'jwt expired'].includes(r.data?.message)) {
+        console.log(chalk.blue('[INFO]'), 'Login expired. Please sign in to your team.')
+        console.log('')
+        await login()
+        await dev()
+        return
+      } else {
+        throw new Error(r.data.message)
+      }
+    }
+
+    const files = await glob('**/*.{yml,yaml}', {
+      ignore: 'node_modules/**',
+    })
+    
+    if (files && files.length === 0) {
+      console.log(chalk.blue('[INFO]'), 'No YAML Files found. Adding sample files...')
+      await init()
+    }
+    const cname = r.data.team.cname
+    const domain = r.data.team.domain
+
+    global.__TEAM = r.data.team
+    
+    require('./bin')    
+
+    setTimeout(() => {
+      const url = WEB_BASE_DOMAIN.replace('{{DOMAIN}}', domain)
+      console.log(chalk.blue('[INFO]'), '✨ Preview URL:')
+      console.log('      ', chalk.underline(url ))
+    }, 300)
+
+
+    
+  } catch (error) {
+    console.error(chalk.red('[ERROR]'), error.message)
+    console.debug(error.stack)
+  }  
+}  
+
+
+async function init() {
+  const files = await glob('**/*.{yml,yaml}', {
+    ignore: 'node_modules/**',
+  })
+  if (files && files.length) {
+    console.log(chalk.blue('[INFO]'), 'Files are located already in current directory.')
+    const answer = await inquirer.prompt([
+      {
+        name: 'overwrite',
+        message: 'Overwrite',
+        default: 'Enter Y to overwrite anyway',
+      }
+    ])
+    if (answer.overwrite.toUpperCase() != 'Y') {
+      return console.log('User cancel')
+    }
+  }
+
+  const samples = require('./sample.js')
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'index.yml')
+    fs.writeFileSync(p, samples['index.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: index.yml')
+  }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'dashboard.yml')
+    fs.writeFileSync(p, samples['dashboard.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: dashboard.yml')
+  }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'users')
+    if (!fs.existsSync(p)) {
+      fs.mkdirSync(p)
+    }
+  }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'users', 'index.yml')
+    fs.writeFileSync(p, samples['users/index.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: users/index.yml')
+  }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'users', 'payment.yml')
+    fs.writeFileSync(p, samples['users/payment.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: users/payment.yml')
+  }
+}
+
+// module.exports.bin = require('./bin')
+// module.exports.app = require('./app.js')
