@@ -357,7 +357,7 @@ async function link() {
       }
 
       config.token = r.data.token
-      config.team_id = answer.team_id
+      config.team_id = r.data.team_id
       fs.writeFileSync(config_path, JSON.stringify(config, null, '  '))
 
       console.log(chalk.blue('[INFO]'), 'This project has been linked to cloud team.')
@@ -500,6 +500,12 @@ async function init() {
     fs.writeFileSync(p, samples['dashboard.yml'].trim())
     console.log(chalk.blue('[INFO]'), 'File added: dashboard.yml')
   }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'reference.yml')
+    fs.writeFileSync(p, samples['reference.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: reference.yml')
+  }
+
   {
     const p = path.join(process.env.CWD || process.cwd(), 'users')
     if (!fs.existsSync(p)) {
