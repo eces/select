@@ -1,51 +1,37 @@
-
 const jwt = require('jsonwebtoken')
-
-// const { neon } = require("@neondatabase/serverless");
-
-// const sql = neon(process.env.ADMIN_DB_URL);
 
 module.exports = async (req, res, next) => {
   try {
-    console.log('>>>>>>>>>>>', req.session)
+    const db = await req.resource('mysql.sample')
 
-    const profile = {
-      email: 'jhlee@selectfromuser.com',
-      id: 1000,
-      scope: [`tid:${global.__TEAM.id}:admin`],
-    }
+    const user = await db.query('SELECT * FROM AdminUser WHERE id = ? AND revoked_at IS NULL', [req.session.id])
+    
+    if (!user) throw new Error('user not found')
 
     req.session = {
-      email: 'jhlee@selectfromuser.com',
-      id: 1000,
-      scope: [`tid:${global.__TEAM.id}:admin`],
+      id: req.session.id,
+      scope: [`tid:${req.team.id}:view`],
+      
+      // initial_ts: req.session.initial_ts,
+      // initial_tid: req.session.initial_tid,
+      // refresh_ts: Date.now(),
+      // method: req.session.method,
     }
-
     
     const key = process.env.SECRET_ACCESS_TOKEN || 'secretAccessToken'
-    const sso_token = jwt.sign(req.session, key, {
-      // expiresIn: global.config.get('policy.session_expire')
+    const token = jwt.sign(req.session, key, {
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRE || 259200
     })
 
     res.status(200).json({
       message: 'ok',
-      // token,
-      sso_token,
-      // domain_token: "a",
+      token,
+      sso_token: token,
       session: Object.assign(req.session, {
-        email: profile.email,
-        name: profile.name,
-        // roles: [`tid:${global.__TEAM.id}:admin`],
-        roles: [],
-        google_sheet_config: {
-          email: '',
-        },
-        flag: profile.flag_config || {},
-        phone: profile.phone,
-        channelTalkHash: null,
-        hash: null,
+        email: user.email,
+        name: user.name,
+        roles: user.role,
       }),
-      // intercom,
     })
   } catch (error) {
     next(error)

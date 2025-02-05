@@ -3,11 +3,18 @@ const path = require('path')
 const fs = require('fs')
 
 const only = require('../models/only')
+const db = require('../models/db')
 const router = require('express').Router()
 
 router.use((req, res, next) => {
-  req._json = true
-  next()
+  try {
+    req._json = true
+    req.team = global.__TEAM
+    req.resource = db.get_internal_resource
+    next()
+  } catch (error) {
+    next(error)
+  }
 })
 
 router.post('/request-otp', async (req, res, next) => {
