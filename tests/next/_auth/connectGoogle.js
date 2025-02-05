@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken')
 const uuidv4 = require('uuid').v4
 const qs = require('querystring')
-const { getRedisConnection } = require('./redis')
+const { getRedisConnection } = require('./_redis')
 
 module.exports = async (req, res, next) => {
   try {
