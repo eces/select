@@ -222,7 +222,7 @@ async function login() {
         }        
 
         token = r.data.token
-        team_id = r.data.team_id
+        // team_id = r.data.team_id
 
       } catch (error) {
         console.error(error.message)
@@ -240,7 +240,7 @@ async function login() {
       }
       fs.writeFileSync(path.join(config_path, 'project.json'), 
       JSON.stringify({
-        team_id,
+        // team_id,
         token,
       }, null, '  ')
       )
@@ -300,11 +300,19 @@ async function link() {
       if (answer.team_id == 'Enter to create new') {
         // create new
         // answer.team_id = 'NEW'
+        const { customAlphabet } = require('nanoid')
+        const nanoidS = customAlphabet('0123456789abcdef')
+
         const r = await inquirer.prompt([
           {
             name: 'name',
-            message: 'Team name',
+            message: 'Project name',
             default: `Project from ${os.hostname()}`,
+          },
+          {
+            name: 'domain',
+            message: 'Project domain',
+            default: nanoidS(12),
           },
         ])
         // answer.team_name = r.name
@@ -314,12 +322,17 @@ async function link() {
           url: global.__API_BASE + '/cli/project',
           data: {
             name: r.name,
+            domain: r.domain,
           },
           headers: {
             Authorization: `${config.token}`,
           },
           json: true,
         })
+        if (r2?.data?.message != 'ok') {
+          console.log(r2.data)
+          throw new Error(`Failed to create project: ${r?.data?.message || '(unknown error)'}`)
+        }
         answer.team_id = r2.data.team_id
       } else {
 
@@ -344,7 +357,7 @@ async function link() {
       }
 
       config.token = r.data.token
-      config.team_id = answer.team_id
+      config.team_id = r.data.team_id
       fs.writeFileSync(config_path, JSON.stringify(config, null, '  '))
 
       console.log(chalk.blue('[INFO]'), 'This project has been linked to cloud team.')
@@ -356,6 +369,7 @@ async function link() {
   } catch (error) {
     console.error(chalk.red('[ERROR]'), error.message)
     console.debug(error.stack)
+    return false
   }  
 }  
 
@@ -399,7 +413,11 @@ async function dev() {
     // console.log('process.env.TEAM_ID', process.env.TEAM_ID, !process.env.TEAM_ID)
     config = require_or_env(config_path)
     if (!process.env.TEAM_ID) {
-      await link()
+      const r = await link()
+      if (r === false) {
+        console.log('abort: run dev')
+        return
+      }
     }
 
 
@@ -482,6 +500,12 @@ async function init() {
     fs.writeFileSync(p, samples['dashboard.yml'].trim())
     console.log(chalk.blue('[INFO]'), 'File added: dashboard.yml')
   }
+  {
+    const p = path.join(process.env.CWD || process.cwd(), 'reference.yml')
+    fs.writeFileSync(p, samples['reference.yml'].trim())
+    console.log(chalk.blue('[INFO]'), 'File added: reference.yml')
+  }
+
   {
     const p = path.join(process.env.CWD || process.cwd(), 'users')
     if (!fs.existsSync(p)) {
