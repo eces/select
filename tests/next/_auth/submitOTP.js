@@ -1,3 +1,4 @@
+// todo
 const jwt = require('jsonwebtoken')
 
 module.exports = async (req, res, next) => {
@@ -8,9 +9,7 @@ module.exports = async (req, res, next) => {
     if (code != 'wow') throw StatusError(400, '실패. 인증코드를 확인해주세요.')
     
     console.log('>>>>>>>>>>>', {challenge_id, code})
-
     // throw StatusError(400, '인증 횟수 초과 (REATTEMPT)')
-
 
     const session = {
       id: 1000,
