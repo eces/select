@@ -7,6 +7,7 @@ const UserProfile = require('./UserProfile')
 const Team = require('./Team')
 const path = require('path')
 const fs = require('fs')
+const db = require('./db')
 
 const axios = require('axios')
 const $http = axios.create({
@@ -205,7 +206,9 @@ const menu = () => {
           throw StatusError('getRoles.js not found')
         }
         const f = require(p)
-        const r = await f(req.session.id)
+        req.team = global.__TEAM
+        req.resource = db.get_internal_resource
+        const r = await f(req)
         roles = r.roles
         user = r.user
       } else {

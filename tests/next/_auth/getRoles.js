@@ -4,18 +4,23 @@ const uuidv4 = require('uuid').v4
 const qs = require('querystring')
 const { getRedisConnection } = require('./redis')
 
-module.exports = async (user_id) => {
+module.exports = async (req) => {
+  const db = await req.resource('mysql.sample')
+
+  const user = await db.query('SELECT * FROM AdminUser WHERE id = ? AND revoked_at IS NULL', [req.session.id])
+
+  if (!user) throw new Error('user not found')  
+  
 	return {
     user: {
-      name: 'Name',
-      email: 'jhlee@selectfromuser.com',
+      name: user.name,
+      email: user.email,
     },
-    roles: [
-      {
-        // id,
-        user_id,
-        name: 'admin',
+    roles: user.role.map(role => {
+      return {
+        user_id: user.id,
+        name: role,
       }
-    ]
+    }),
   }
 }
