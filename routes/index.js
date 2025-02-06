@@ -4,6 +4,8 @@ const router = require('express').Router()
 
 router.use('/api/block', require('./block'))  
 router.use('/api/team', require('./team'))  
+router.use('/api/auth', require('./auth'))  
+router.use('/api/connect', require('./connect'))  
 router.get('/healthcheck', (req, res) => {
   res.status(200).send('ok')
 })

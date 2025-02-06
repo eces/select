@@ -5,6 +5,9 @@ const parseDuration = require('parse-duration')
 const ipcidr = require('ip-cidr')
 const UserProfile = require('./UserProfile')
 const Team = require('./Team')
+const path = require('path')
+const fs = require('fs')
+const db = require('./db')
 
 const axios = require('axios')
 const $http = axios.create({
@@ -196,7 +199,19 @@ const menu = () => {
       
       let roles = []
       let user
-      {
+
+      if (process.env.ADMIN_ON_PREMISE) {
+        const p = path.join(process.env.CWD || process.cwd(), '_auth', 'getRoles.js')
+        if (!fs.existsSync(p)) {
+          throw StatusError('getRoles.js not found')
+        }
+        const f = require(p)
+        req.team = global.__TEAM
+        req.resource = db.get_internal_resource
+        const r = await f(req)
+        roles = r.roles
+        user = r.user
+      } else {
         const r = await $http({
           method: 'GET',
           url: '/cli/UserRole/get',

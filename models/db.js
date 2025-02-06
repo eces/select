@@ -5,6 +5,15 @@ const logger = require('./logger')
 const {createConnectionAny, getConnectionAny} = require('./dbAny')
 const State = require('./State')
 
+const internal_resources = {}
+module.exports.get_internal_resource = async (name) => {
+  if (!internal_resources[name]) {
+    throw new Error('internal resource not found')
+  }
+  const conn = await getConnection(internal_resources[name])
+  return conn
+}
+
 module.exports.init_team_resource_all = async () => {
   // get yaml
   // load resources db/dbAny
@@ -124,6 +133,10 @@ module.exports.init_team_resource = async (team_id) => {
           } else {
             team_resource_connection = await getConnection(`${team_id}-${row.id}`)
           }
+          
+          // patch _auth req.resource
+          internal_resources[row.json.name] = `${team_id}-${row.id}`
+
           let timezone = undefined
           let version = undefined
           if (row.json.type == 'mysql') {
