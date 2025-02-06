@@ -34,14 +34,13 @@ module.exports = async (req, res, next) => {
         email: user.email,
         name: user.name,
 
-        // roles: [`email::${user.email}`, ...user.role]
-        roles: user.role.map(role => {
-          return {
+        roles: [
+          {
             user_id: user.id,
-            team_id: req.team.id,
-            name: role,
+            name: 'view',
+            group_json: user.role,
           }
-        }),
+        ]
       }),
     })
   } catch (error) {

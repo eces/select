@@ -3,11 +3,14 @@ const only = require('../models/only')
 const logger = require('../models/logger')
 const monitor = require('../models/monitor')
 const State = require('../models/State')
+const db = require('../models/db')
 const { getConnection, Db } = require('typeorm')
 const { getConnectionAny } = require('../models/dbAny')
 const alasql = require('alasql')
 const { getGotInstance } = require('../models/httpGot')
 const router = require('express').Router()
+const path = require('path')
+const fs = require('fs')
 
 const { Parser } = require('node-sql-parser')
 const parser = new Parser
@@ -283,34 +286,61 @@ router.get('/:admin_domain_or_team_id/config', [only.id(), only.teamscope_any_of
       // update UserRole
       const refresh_role = async () => {
         try {
-          const r = await $http({
-            method: 'GET',
-            url: '/cli/UserRole/get',
-            params: {
-              user_id: req.session.id,
-            },
-            headers: {
-              Authorization: `${process.env.TOKEN}`,
-            },
-            json: true,
-          })
-          if (r.data?.message != 'ok') throw new Error('Network Error')
-          
-          const roles = []
-          if (r.data.roles[0]) {
-            roles.push(`select::${r.data.roles[0].name}`)
-            if (r.data.roles[0].group_json) {
-              roles.push(...r.data.roles[0].group_json)
+          if (process.env.ADMIN_ON_PREMISE) {
+            const p = path.join(process.env.CWD || process.cwd(), '_auth', 'getRoles.js')
+            if (!fs.existsSync(p)) {
+              throw StatusError('getRoles.js not found')
             }
+            const f = require(p)
+            req.team = global.__TEAM
+            req.resource = db.get_internal_resource
+            // required: req.session.id
+            const r = await f(req)
+            
+            const roles = []
+            if (r.roles[0]) {
+              roles.push(`select::${r.roles[0].name}`)
+              if (r.roles[0].group_json) {
+                roles.push(...r.roles[0].group_json)
+              }
+            }
+            roles.push(`email::${r.user.email}`)
+  
+            r.roles = roles
+            
+            global.__USER_ROLES[req.session.id] = r
+
+            return
+          } else {
+            const r = await $http({
+              method: 'GET',
+              url: '/cli/UserRole/get',
+              params: {
+                user_id: req.session.id,
+              },
+              headers: {
+                Authorization: `${process.env.TOKEN}`,
+              },
+              json: true,
+            })
+            if (r.data?.message != 'ok') throw new Error('Network Error')
+            
+            const roles = []
+            if (r.data.roles[0]) {
+              roles.push(`select::${r.data.roles[0].name}`)
+              if (r.data.roles[0].group_json) {
+                roles.push(...r.data.roles[0].group_json)
+              }
+            }
+            roles.push(`email::${r.data.user.email}`)
+  
+            r.data.roles = roles
+  
+            global.__USER_ROLES[req.session.id] = r.data
+            return
           }
-          roles.push(`email::${r.data.user.email}`)
-
-          r.data.roles = roles
-
-          global.__USER_ROLES[req.session.id] = r.data
-          return
         } catch (error) {
-          console.log('Failed to fetch UserRole')
+          console.log('Failed to fetch UserRole', error)
         }
       }
 
