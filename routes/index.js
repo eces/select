@@ -24,4 +24,6 @@ router.get('/', (req, res) => {
   res.status(200).send('ok')
 })
 
+router.use(require('./api'))
+
 module.exports = router
