@@ -9,7 +9,7 @@ const alasql = require('alasql')
 const { getGotInstance } = require('../models/httpGot')
  
 const external_axios = require('axios').create({
-  timeout: 5000,
+  timeout: 30000, 
   headers: {
     'User-Agent': 'SelectAdmin',
   },
