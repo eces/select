@@ -44,7 +44,7 @@
     "form-data": "^4.0.0",
     "generic-pool": "^3.9.0",
     "glob": "^10.3.10",
-    "googleapis": "^92.0.0",
+    "googleapis": "^124.0.0",
     "got": "^13.0.0",
     "http-errors": "^1.7.1",
     "inquirer": "^8.2.6",
