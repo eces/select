@@ -35,7 +35,7 @@
     "cors": "^2.8.5",
     "debug": "^4.1.1",
     "debugs": "^1.0.11",
-    "diff": "^5.1.0",
+    "diff": "^5.2.2",
     "dotenv": "^16.3.1",
     "errorhandler": "^1.5.0",
     "excel-date-to-js": "^1.1.4",
@@ -54,7 +54,7 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^8.5.0",
     "livereload": "^0.9.3",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.23",
     "moment": "^2.24.0",
     "mongodb": "^3.7.3",
     "morgan": "^1.9.1",
@@ -76,7 +76,7 @@
     "socket.io-client": "^4.8.1",
     "typeorm": "^0.2.12",
     "uuid": "^9.0.0",
-    "vm2": "^3.9.19",
+    "vm2": "^3.10.2",
     "winston": "^3.3.3"
   },
   "devDependencies": {
